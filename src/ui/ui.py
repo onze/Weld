@@ -8,7 +8,10 @@ import sys
 from PySide import QtGui
 from PySide.QtCore import Qt
 
-from QSteelWidget.PyQSteelWidget import QSteelWidget
+#libPyQSteelWidget.so is expected to be located in the current directory.
+#This shared library contains the Steel engine binding widget. You can compile
+#it with the QSteelWidget project @ 
+QSteelWidget=__import__('PyQSteelWidget').QSteelWidget
 
 class Ui(QtGui.QMainWindow):
     def __init__(self, weld):
