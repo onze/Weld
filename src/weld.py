@@ -4,15 +4,25 @@
 __author__ = "onze"
 __date__ = "$7-May-2011 4:24:35 PM$"
 
+import config
 from ui.ui import Ui
 from level import Level
+from resourcemanager import ResourceManager
 
 class Weld(object):
+    """
+    Main class of the editor.
+    """
     def __init__(self, parent=None):
+        self.config=config.Config()
         self.ui=Ui(self)
 
         #setup internal resource handlers
         self.level=None
+        
+        #list of resources we can ask steel to load
+        self.resMan=ResourceManager(self.config.resources_root_path)
+        self.ui.set_resources(self.resMan.model)
 
         #ready
         self.ui.show_status('ready', 1000)

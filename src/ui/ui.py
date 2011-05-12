@@ -5,7 +5,7 @@ __date__ = "$7-May-2011 4:24:35 PM$"
 
 import sys
 
-from PySide import QtGui
+from PySide import QtCore,QtGui
 from PySide.QtCore import Qt
 
 #libPyQSteelWidget.so is expected to be located in the current directory.
@@ -59,16 +59,16 @@ class Ui(QtGui.QMainWindow):
         dockWidget.setWidget(self.res_browser['widget'])
 
         #weld resources browser
-        self.res_browser['weld_resources'] = QtGui.QToolBox()
-        self.res_browser['widget'].addTab(self.res_browser['weld_resources'], 'weld resources')
+        self.res_browser['resources'] = QtGui.QTreeView()
+        self.res_browser['widget'].addTab(self.res_browser['resources'], 'library')
 
         #level resources browser
-        tree =self.res_browser['level_resources']= QtGui.QTreeView()
+        tree=self.res_browser['level_resources']= QtGui.QTreeView()
 
         model=QtGui.QDirModel()
         tree.setModel(model)
 
-        self.res_browser['widget'].addTab(self.res_browser['level_resources'], 'level resources')
+        self.res_browser['widget'].addTab(self.res_browser['level_resources'], 'level')
 
     def show_status(self, s, timeout=0):
         self.statusBar().showMessage(s, timeout)
@@ -175,6 +175,33 @@ class Ui(QtGui.QMainWindow):
         """
         self.central_widget['qt_ogre_widget']=QSteelWidget()
         self.central_widget['widget'].addTab(self.central_widget['qt_ogre_widget'], name)
+
+    def set_resources(self, model):
+        """
+        populates the resources browser with the given model. Resources are
+        contained in a filesystem structure, so a treeview is used.
+        """
+        tree=self.res_browser['resources']
+        tree.setModel(model)
+        tree.setRootIndex(model.index(model.rootPath()));
+
+        #make it look a bit more like a resources browser
+        tree.hideColumn(2)
+        tree.hideColumn(3)
+        tree.sortByColumn(0,Qt.AscendingOrder)
+        #expand main categories
+        dir=model.rootDirectory()
+        dir.setFilter(QtCore.QDir.Dirs| QtCore.QDir.NoDotAndDotDot)
+
+        for entry in dir.entryInfoList():
+            index=model.index(model.rootDirectory().path()+'/'+entry.fileName())
+            tree.setExpanded(index,True)
+            print model.rootDirectory().path()+'/'+entry.fileName(),index,tree.isExpanded(index)
+        tree.setRootIsDecorated(False)
+        tree.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+
+
+
 
 
 
