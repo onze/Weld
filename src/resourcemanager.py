@@ -1,7 +1,7 @@
 
 import os
 
-from PySide import QtGui
+from PySide import QtCore,QtGui
 
 class ResourceManager:
     """
@@ -17,8 +17,8 @@ class ResourceManager:
         base_path=os.path.join(os.getcwd(),base_path)
         print 'ResourceManager started with root',base_path
         self.model.setRootPath(base_path)
-        
 
+        
 
 
 
