@@ -12,6 +12,7 @@ from PySide import QtCore
 from PySide import QtGui
 from PySide.QtCore import Qt
 
+from config import Config
 from console import Console, Writer
 from levelcreationdialog import LevelCreationDialog
 
@@ -41,9 +42,9 @@ class Ui(QtGui.QMainWindow):
         #setup main widgets
         self.setup_menu()
         self.setup_resources_browser()
-        self.setup_central_widget()
-        self.setup_property_browser()
         self.setup_console()
+        self.setup_property_browser()
+        self.setup_central_widget()
 
     def close_level_creation_dialog(self):
         idx = self.central_widget['widget'].indexOf(self.central_widget['level_creation_dialog'])
@@ -56,14 +57,10 @@ class Ui(QtGui.QMainWindow):
     def close_project_trigger(self):
         self.weld.close_project()
 
-    def feed_resources(self, resources):
-        """
-        feeds the resources browser with a level resources
-        """
-        pass
-
     @staticmethod
     def instance():
+        if Ui.__instance is None:
+            raise Exception('no ui created.')
         return Ui.__instance
 
     def level_creation_dialog_ok(self):
@@ -117,12 +114,13 @@ class Ui(QtGui.QMainWindow):
         """
         if 'qsteelwidget' not in self.central_widget:
             self.central_widget['qsteelwidget'] = qsteelwidget = QSteelWidget()
+            writer = Writer(Console.instance,
+                            pre='<span style="color:green">',
+                            post='</span>',
+                            dispatch_list=[sys.__stdout__])
+            if Config.instance().show_ogre_init:
+                qsteelwidget.onNewLogLine.connect(Console.write)
             self.central_widget['widget'].addTab(qsteelwidget, 'Steel view')
-            ogreWriter = Writer(Console.instance,
-                                pre='<span style="color:green">',
-                                post='</span>',
-                                dispatch_list=[sys.__stdout__])
-            qsteelwidget.onNewLogLine.connect(ogreWriter.write)
         return self.central_widget['qsteelwidget']
 
     def quit_trigger(self):
@@ -245,6 +243,8 @@ class Ui(QtGui.QMainWindow):
 
     def show(self):
         QtGui.QMainWindow.show(self)
+        if not Config.instance().show_ogre_init:
+            self.qsteelwidget.onNewLogLine.connect(Console.write)
         return self.app.exec_()
 
     def show_status(self, s, timeout=0):

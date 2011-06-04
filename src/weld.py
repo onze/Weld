@@ -6,7 +6,7 @@ import os.path
 __author__ = "onze"
 __date__ = "$7-May-2011 4:24:35 PM$"
 
-import config
+from config import Config
 import os
 import sys
 from PySide import QtCore, QtGui
@@ -21,11 +21,10 @@ class Weld(Savable):
     Main class of the editor.
     """
     def __init__(self, parent=None):
-        Savable.__init__(self,savepath=os.path.join(sys.path[0],'weld.cache'))
-        self.savelist+=['current_project_path']
-        self.current_project_path=None
+        Savable.__init__(self, savepath=os.path.join(sys.path[0], 'weld.cache'))
+        self.savelist += ['current_project_path']
+        self.current_project_path = None
 
-        self.config = config.Config()
         Ui(self)
 
         #setup internal resource handlers
@@ -33,18 +32,17 @@ class Weld(Savable):
         self.level = None
         
         #list of resources we can ask steel to load
-        self.resMan = ResourceManager(os.path.join(self.config.weld_data_path, 'resources'))
-        Ui.instance().set_resources(self.resMan.model)
+        self.resMan = ResourceManager(os.path.join(Config.instance().weld_data_path, 'resources'))
 
         #ready
         Ui.instance().show_status('ready', 1000)
 
         self.load()
-        if self.config.on_open_reopen_last_project:
+        if Config.instance().on_open_reopen_last_project:
             if self.current_project_path is not None:
-                print 'auto reopening project %s.'%self.current_project_path
-                p,f=os.path.split(self.current_project_path)
-                self.open_project(self.current_project_path,f)
+                print 'auto reopening project %s.' % self.current_project_path
+                p, f = os.path.split(self.current_project_path)
+                self.open_project(self.current_project_path, f)
             else:
                 print 'no project to reopen.'
         else:
@@ -66,7 +64,7 @@ class Weld(Savable):
             return Ui.instance().open_level_creation_dialog(self.new_level)
 
     def new_project(self, rootdir=None):
-        print 'Weld.new_project in ',rootdir
+        print 'Weld.new_project in ', rootdir
         if rootdir is None:
             rootdir = Ui.instance().select_directory('/tmp')
         if not os.path.exists(rootdir):
@@ -76,11 +74,11 @@ class Weld(Savable):
 
         project.save()
         self.project = project
-        self.current_project_path=rootdir
+        self.current_project_path = rootdir
         Ui.instance().show_status('new project created')
 
     def open_project(self, rootdir=None, filename=None):
-        print 'Weld.open_project',filename,'in',rootdir
+        print 'Weld.open_project', filename, 'in', rootdir
         if None in [rootdir, filename]:
             if rootdir is None:
                 rootdir = '/tmp'
@@ -93,14 +91,14 @@ class Weld(Savable):
             rootdir, filename = os.path.split(filepath)
         else:
             if not os.path.exists(rootdir):
-                print >> sys.stderr,'invalid project path:',rootdir
+                print >> sys.stderr, 'invalid project path:', rootdir
                 return
         
         project = Project(rootdir)
         project.load()
 
         self.project = project
-        self.current_project_path=rootdir
+        self.current_project_path = rootdir
         Ui.instance().show_status('project %s opened' % (filename))
 
     def save_level(self):
@@ -119,7 +117,7 @@ class Weld(Savable):
             Ui.instance().show_status('there is no open project to save.')
 
     def run(self):
-        r=Ui.instance().show()
+        r = Ui.instance().show()
         self.on_quit()
         return r
 

@@ -4,6 +4,9 @@ debug=True
 
 #weld config
 
+#show steel/ogre init
+show_ogre_init=False
+
 #path to resources that can be loaded by steel
 weld_data_path='data'
 

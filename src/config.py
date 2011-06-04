@@ -8,15 +8,17 @@ except IOError, e:
     #setup default conf
     class conf:pass
     conf.debug=False
+    conf.show_ogre_init=False
     conf.weld_data_path = 'data'
     conf.project_data_path = 'data'
 
 class Config:
     """
-    Proxy between the weld and its configuration file.
+    Proxy between weld and its configuration file.
     """
+    __instance=None
     def __init__(self):
-        #forst do abasic copy of the config
+        #first do a basic copy of the config
         for k,v in conf.__dict__.items():
             self.__dict__[k]=v
 
@@ -29,6 +31,12 @@ class Config:
         else:
 
             raise Exception('there is no such config attribute as \'%s\'. Config dump:%s'%(name,self.__dict__))
+
+    @staticmethod
+    def instance():
+        if Config.__instance is None:
+            Config.__instance=Config()
+        return Config.__instance
     
 
         
