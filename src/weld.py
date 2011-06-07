@@ -29,14 +29,13 @@ class Weld(Savable):
 
         #setup internal resource handlers
         self.project = None
-        self.level = None
         
         #list of resources we can ask steel to load
         self.resMan = ResourceManager(os.path.join(Config.instance().weld_data_path, 'resources'))
+        self.resMan.attach_to_Ui(Ui.instance().res_browser['library'])
 
         #ready
         Ui.instance().show_status('ready', 1000)
-
         self.load()
         if Config.instance().on_open_reopen_last_project:
             if self.current_project_path is not None:
@@ -49,6 +48,7 @@ class Weld(Savable):
             print 'skipping project reopening.'
 
     def close_project(self):
+        Ui.instance().set_resources_draggable(False)
         raise NotImplementedError()
 
     def new_level(self, props={}):
@@ -70,15 +70,34 @@ class Weld(Savable):
         if not os.path.exists(rootdir):
             os.makedirs(rootdir)
 
+        print '->new project in', rootdir
         project = Project(rootdir)
 
         project.save()
         self.project = project
         self.current_project_path = rootdir
+        Ui.instance().set_resources_draggable(True)
         Ui.instance().show_status('new project created')
 
+    def on_item_dropped(self,url):
+        """
+        triggered when an item is dropped in the qsteelwidget.
+        """
+        print 'Weld.on_item_dropped:',url
+        #make sure all struct are present
+        if not(self.project and self.project.level):
+            print>>sys.stderr,'too early to drop: create a project and a level first.'
+            return
+        #retrieve data if it comes from weld
+        if url in self.resMan:
+            props=self.resMan.file_props(url)
+            url=self.project.level.resMan.add_resource(props)
+        #instanciate it
+        if url in self.project.level.resMan:
+            props=self.project.level.resMan.file_props(url)
+            self.project.level.instanciate(props)
+
     def open_project(self, rootdir=None, filename=None):
-        print 'Weld.open_project', filename, 'in', rootdir
         if None in [rootdir, filename]:
             if rootdir is None:
                 rootdir = '/tmp'
@@ -91,41 +110,47 @@ class Weld(Savable):
             rootdir, filename = os.path.split(filepath)
         else:
             if not os.path.exists(rootdir):
+                self.current_project_path=None
                 print >> sys.stderr, 'invalid project path:', rootdir
                 return
-        
+
+        print 'Weld.open_project', filename, 'in', rootdir
         project = Project(rootdir)
         project.load()
 
         self.project = project
         self.current_project_path = rootdir
+        Ui.instance().set_resources_draggable(True)
         Ui.instance().show_status('project %s opened' % (filename))
-
-    def save_level(self):
-        if self.project and self.project.level:
-            self.project.level.save()
-            Ui.instance().show_status('level saved.')
-        else:
-            Ui.instance().show_status('there is no level to save.')
-
-    def save_project(self):
-        print 'Weld.save_project()'
-        if self.project is not None:
-            self.project.save()
-            Ui.instance().show_status('project saved.')
-        else:
-            Ui.instance().show_status('there is no open project to save.')
-
-    def run(self):
-        r = Ui.instance().show()
-        self.on_quit()
-        return r
 
     def on_quit(self):
         print 'Weld.on_quit()'
         self.save()
         self.save_project()
         self.save_level()
+        if self.project:
+            self.project.close()
+
+    def save_level(self):
+        if self.project and self.project.level:
+            print 'Weld.save_level()'
+            self.project.level.save()
+            Ui.instance().show_status('level saved.')
+        else:
+            Ui.instance().show_status('no level to save.')
+
+    def save_project(self):
+        if self.project is not None:
+            print 'Weld.save_project()'
+            self.project.save()
+            Ui.instance().show_status('project saved.')
+        else:
+            Ui.instance().show_status('no project to save.')
+
+    def run(self):
+        r = Ui.instance().show()
+        self.on_quit()
+        return r
 
 
 

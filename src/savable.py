@@ -44,9 +44,18 @@ class Savable(object):
         if not os.path.exists(filepath):
             os.makedirs(filepath)
         try:
+            #backup previous save
+            if os.path.exists(self.savepath):
+                os.rename(self.savepath,self.savepath+'.back')
+
+            #do actual saving
             file = open(self.savepath, 'wb')
             pickle.dump(toPickle, file)
             file.close()
+
+            #remove backup
+            if os.path.exists(self.savepath+'.back'):
+                os.remove(self.savepath+'.back')
         except Exception, e:
             raise
             print >> sys.stderr, 'in Savable%s.save():'%self, e.args

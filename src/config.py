@@ -8,8 +8,12 @@ except IOError, e:
     #setup default conf
     class conf:pass
     conf.debug=False
-    conf.show_ogre_init=False
+
     conf.weld_data_path = 'data'
+
+    conf.show_ogre_init=False
+    drop_target_vec=(.0,-1.,-10.)
+    
     conf.project_data_path = 'data'
 
 class Config:
@@ -30,7 +34,7 @@ class Config:
             return self.__dict__[name]
         else:
 
-            raise Exception('there is no such config attribute as \'%s\'. Config dump:%s'%(name,self.__dict__))
+            raise Exception('there is no such config attribute as \'%s\'. Config dump:%s'%(name,dir(self)))
 
     @staticmethod
     def instance():

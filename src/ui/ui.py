@@ -81,6 +81,9 @@ class Ui(QtGui.QMainWindow):
     @level_name.setter
     def level_name(self, name):
         self._level_name = name
+        if name is not None and 'qsteelwidget' in self.central_widget:
+            idx=self.central_widget['widget'].indexOf(self.central_widget['qsteelwidget'])
+            self.central_widget['widget'].setTabText(idx,name)
         self.update_window_title()
 
     def new_level_trigger(self):
@@ -110,7 +113,8 @@ class Ui(QtGui.QMainWindow):
     @property
     def qsteelwidget(self):
         """
-        instanciate a c++ QtOgreWidget and returns a pointer to it.
+        instanciate a c++ QtSteelWidget and returns a pointer to it.
+        this widget is responsible for calling steel methods.
         """
         if 'qsteelwidget' not in self.central_widget:
             self.central_widget['qsteelwidget'] = qsteelwidget = QSteelWidget()
@@ -120,6 +124,7 @@ class Ui(QtGui.QMainWindow):
                             dispatch_list=[sys.__stdout__])
             if Config.instance().show_ogre_init:
                 qsteelwidget.onNewLogLine.connect(Console.write)
+            qsteelwidget.onItemDropped.connect(self.weld.on_item_dropped)
             self.central_widget['widget'].addTab(qsteelwidget, 'Steel view')
         return self.central_widget['qsteelwidget']
 
@@ -162,29 +167,6 @@ class Ui(QtGui.QMainWindow):
         if not os.path.exists(filename):
             return None
         return filename
-
-    def set_resources(self, model):
-        """
-        populates the resources browser with the given model. Resources are
-        contained in a filesystem structure, so a treeview is used.
-        """
-        tree = self.res_browser['resources']
-        tree.setModel(model)
-        tree.setRootIndex(model.index(model.rootPath()));
-
-        #make it look a bit more like a resources browser
-        tree.hideColumn(2)
-        tree.hideColumn(3)
-        tree.sortByColumn(0, Qt.AscendingOrder)
-        #expand main categories
-        dir = model.rootDirectory()
-        dir.setFilter(QtCore.QDir.Dirs | QtCore.QDir.NoDotAndDotDot)
-
-        for entry in dir.entryInfoList():
-            index = model.index(model.rootDirectory().path() + '/' + entry.fileName())
-            tree.setExpanded(index, True)
-        tree.setRootIsDecorated(False)
-        tree.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     def setup_central_widget(self):
         self.central_widget = {'widget':QtGui.QTabWidget()}
@@ -230,9 +212,8 @@ class Ui(QtGui.QMainWindow):
 
         #weld resources browser
         tree = QtGui.QTreeView()
-        tree.setDragEnabled(True)
-        self.res_browser['resources'] = tree
-        self.res_browser['widget'].addTab(self.res_browser['resources'], 'library')
+        self.res_browser['library'] = tree
+        self.res_browser['widget'].addTab(self.res_browser['library'], 'library')
 
         #level browser
         tree = QtGui.QTreeView()
@@ -241,9 +222,13 @@ class Ui(QtGui.QMainWindow):
         self.res_browser['level'] = tree
         self.res_browser['widget'].addTab(tree, 'level')
 
+    def set_resources_draggable(self,draggable):
+        self.res_browser['library'].setDragEnabled(draggable)
+        self.res_browser['level'].setDragEnabled(draggable)
+
     def show(self):
         QtGui.QMainWindow.show(self)
-        if not Config.instance().show_ogre_init:
+        if 'qsteelwidget' in self.central_widget and not Config.instance().show_ogre_init:
             self.qsteelwidget.onNewLogLine.connect(Console.write)
         return self.app.exec_()
 

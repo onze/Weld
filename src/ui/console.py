@@ -13,16 +13,16 @@ class Console(QtGui.QPlainTextEdit):
                             post='</span>',
                             dispatch_list=[sys.__stdout__]
                             )
-        sys.stderr = Writer(self,
-                            pre='<span style="color:red">',
-                            post='</span>',
-                            dispatch_list=[sys.__stderr__]
-                            )
-        sys.warning= Writer(self,
-                            pre='<span style="color:orange">',
-                            post='</span>',
-                            dispatch_list=[sys.__stderr__]
-        )
+        #sys.stderr = Writer(self,
+        #                    pre='<span style="color:red">',
+        #                    post='</span>',
+        #                    dispatch_list=[sys.__stderr__]
+        #                    )
+        sys.warning = Writer(self,
+                             pre='<span style="color:orange">',
+                             post='</span>',
+                             dispatch_list=[sys.__stderr__]
+                             )
 
     def _write(self, s):
         self.textCursor().insertHtml('<br>' + s)
@@ -45,10 +45,10 @@ class Writer:
         self.dispatch_list = dispatch_list
 
     def write(self, s):
-        if s == '\n':
+        for fd in self.dispatch_list:
+            print >> fd, s,
+        if s == '\n' or s.endswith('\n'):
             self.console.write(self.pre + self.buffer + self.post)
-            for fd in self.dispatch_list:
-                print >> fd, self.buffer
             self.buffer = ''
         else:
             for k, v in {'>':'&gt;', '<':'&lt;'}.items():
