@@ -1,5 +1,6 @@
 
 import os
+from PySide.QtGui import QVector3D
 
 try:
     import weld_conf as conf
@@ -27,6 +28,7 @@ class Config:
             self.__dict__[k]=v
 
         #TODO: then treat special cases here
+        self.drop_target_vec=QVector3D(*self.drop_target_vec)
 
     def __getattr__(self,name):
         if name in self.__dict__:

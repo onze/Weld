@@ -21,7 +21,7 @@ from levelcreationdialog import LevelCreationDialog
 #it with the QSteelWidget project @ 
 QSteelWidget = __import__('PyQSteelWidget').QSteelWidget
 
-class Ui(QtGui.QMainWindow):
+class Ui(QtGui.QMainWindow,object):
     """singleton"""
     __instance = None
 
@@ -100,6 +100,12 @@ class Ui(QtGui.QMainWindow):
         idx = self.central_widget['widget'].addTab(form, 'new level dialog')
         self.central_widget['widget'].setTabEnabled(idx, True)
         return form
+
+    def open_level_trigger(self):
+        print 'UI.open_level_trigger()'
+
+    def open_project_trigger(self):
+        self.weld.open_project()
 
     @property
     def project_name(self):
@@ -234,12 +240,6 @@ class Ui(QtGui.QMainWindow):
 
     def show_status(self, s, timeout=0):
         self.statusBar().showMessage(s, timeout)
-
-    def open_project_trigger(self):
-        self.weld.open_project()
-
-    def open_level_trigger(self):
-        print 'UI.open_level_trigger()'
 
     def undo_trigger(self):
         print 'UI.undo_trigger()'

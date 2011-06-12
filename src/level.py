@@ -9,6 +9,7 @@ from config import Config
 from savable import Savable
 from ui.ui import Ui
 from resourcemanager import ResourceManager
+from debug import pp
 
 class Level(Savable):
 
@@ -22,25 +23,30 @@ class Level(Savable):
         self.project = project
         self.name = name
         self.path = levelpath
-        self.resMan=None
+        self.inanimates = []
+        self.resMan = None
 
         Savable.__init__(self, savepath=os.path.join(levelpath, self.name + '.lvl'))
-        self.resources = {'models':[]}
+        self.savelist += ['inanimates']
+        self.resources = {'inanimate':[]}
 
     def attach_to_Ui(self):
         """
         Links the level with its views.
         """
-        print '<Level \'%s\'>.attach_to_Ui()' % (self.name)
+        print '<Level \'%s\'>.attach_to_Ui():' % (self.name),
 
-        self.resMan=ResourceManager(self.path)
+        self.resMan = ResourceManager(self.path)
         self.resMan.attach_to_Ui(Ui.instance().res_browser['level'])
         
         self.qsteelwidget = Ui.instance().qsteelwidget
+        if self.qsteelwidget.isSteelReady():
+            print 'loading now.'
+            self.on_steel_ready()
+        else:
+            print 'will wait for steel to be ready before loading.'
+            self.qsteelwidget.onSteelReady.connect(self.on_steel_ready)
         Ui.instance().level_name = self.name
-        #may have already been set, but there's no steel context to set it before
-        #the first level is created
-        self.qsteelwidget.setLevel(self.project.rootdir, self.name)
         
     def close(self):
         """
@@ -49,16 +55,36 @@ class Level(Savable):
         if self.qsteelwidget:
             self.qsteelwidget.close()
 
-    def instanciate(self, props):
+    def instanciate(self, props, already_in=False):
         """
         Make Steel instanciate an object according to the given props.
+        If already_in is set to False (default), the object is saved for reload.
         """
+        print '<Level \'%s\'>.instanciate():\n%s' % (self.name, pp(props))
         if props['resource_type'] == 'inanimate':
-            id = self.qsteelwidget.drop_inanimate(props['name']+'.'+props['ext'], *Config.instance().drop_target_vec)
-            print 'id:', id
-            Ui.instance().show_status('dropped inanimate \'%s\' with id %i' % (props['name'], id))
+            id = self.qsteelwidget.addInanimate(props['name'] + '.' + props['ext'],
+                                                props['position'],
+                                                props['rotation'])
+            props['id'] = id
+            if not already_in:
+                self.inanimates.append(dict(props))
         else:
             print 'unknown resource type'
 
+    def load(self):
+        """
+        Overloads Savable.load() to load into steel all objects of the level.
+        """
+        Savable.load(self)
+
+    def on_steel_ready(self):
+        """
+        triggered by the steelwidget when steel is ready to process commands.
+        """
+        print "<Level %s>.on_steel_ready()" % (self.name)
+        self.qsteelwidget.setLevel(self.project.rootdir, self.name)
+        for props in self.inanimates:
+            print 'restoring', pp(props)
+            self.instanciate(props, already_in=True)
 
 

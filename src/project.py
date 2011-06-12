@@ -45,13 +45,16 @@ class Project(Savable):
 
     def load(self):
         Savable.load(self)
-        Ui.instance()._project_name = self.name
-        if self.level_name is not None:
+        Ui.instance().project_name = self.name
+        if self.level_name:
             self.open_level(self.level_name)
 
     def open_level(self, name):
-        print '<Project %s>.open_level(\'%s\')'%(self.name,name)
+        print '<Project \'%s\'>.open_level(\'%s\')'%(self.name,name)
         levelpath = os.path.join(self.rootdir, 'levels', name)
+        if not os.path.exists(levelpath):
+            print>>sys.stderr,'Project.open_level(name=%s) canceled: invalid path %s'%(name,levelpath)
+            return
         level = Level(self, name, levelpath)
         level.load()
         level.attach_to_Ui()

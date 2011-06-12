@@ -57,6 +57,9 @@ class Weld(Savable):
         It opens a level configuration form in a tabbed widget, that calls it again
         with the properties ('props') filled by the user.
         """
+        if self.project is None:
+            Ui.instance().show_status('please create a project first.')
+            return
         if props:
             self.project.new_level(props)
             Ui.instance().show_status('new level created')
@@ -64,13 +67,12 @@ class Weld(Savable):
             return Ui.instance().open_level_creation_dialog(self.new_level)
 
     def new_project(self, rootdir=None):
-        print 'Weld.new_project in ', rootdir
         if rootdir is None:
             rootdir = Ui.instance().select_directory('/tmp')
         if not os.path.exists(rootdir):
             os.makedirs(rootdir)
 
-        print '->new project in', rootdir
+        print 'Weld.new_project in ', rootdir
         project = Project(rootdir)
 
         project.save()
@@ -79,23 +81,29 @@ class Weld(Savable):
         Ui.instance().set_resources_draggable(True)
         Ui.instance().show_status('new project created')
 
-    def on_item_dropped(self,url):
+    def on_item_dropped(self, url):
         """
         triggered when an item is dropped in the qsteelwidget.
         """
-        print 'Weld.on_item_dropped:',url
+        print 'Weld.on_item_dropped:', url
         #make sure all struct are present
         if not(self.project and self.project.level):
-            print>>sys.stderr,'too early to drop: create a project and a level first.'
+            print >> sys.stderr, 'too early to drop: create a project and a level first.'
             return
         #retrieve data if it comes from weld
         if url in self.resMan:
-            props=self.resMan.file_props(url)
-            url=self.project.level.resMan.add_resource(props)
+            props = self.resMan.file_props(url)
+            url = self.project.level.resMan.add_resource(props)
         #instanciate it
         if url in self.project.level.resMan:
-            props=self.project.level.resMan.file_props(url)
+            props = self.project.level.resMan.file_props(url)
+            dtp=self.project.level.qsteelwidget.dropTargetPosition(Config.instance().drop_target_vec)
+            props['position'] = dtp
+            props['rotation']=self.project.level.qsteelwidget.dropTargetRotation()
             self.project.level.instanciate(props)
+            s = 'dropped inanimate \'%s\' with id %i' % (props['name'], props['id'])
+            print s
+            Ui.instance().show_status(s)
 
     def open_project(self, rootdir=None, filename=None):
         if None in [rootdir, filename]:
@@ -110,7 +118,7 @@ class Weld(Savable):
             rootdir, filename = os.path.split(filepath)
         else:
             if not os.path.exists(rootdir):
-                self.current_project_path=None
+                self.current_project_path = None
                 print >> sys.stderr, 'invalid project path:', rootdir
                 return
 

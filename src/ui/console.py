@@ -25,7 +25,7 @@ class Console(QtGui.QPlainTextEdit):
                              )
 
     def _write(self, s):
-        self.textCursor().insertHtml('<br>' + s)
+        self.textCursor().insertHtml(s)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
 
@@ -44,14 +44,20 @@ class Writer:
         self.post = post
         self.dispatch_list = dispatch_list
 
+    def toHtml(self,s):
+        for k, v in [('>','&gt;'),
+            ('<','&lt;'),
+            ('\n','<br>'),
+            ('\t','&nbsp;&nbsp;&nbsp;&nbsp;')
+            ]:
+            s = s.replace(k, v)
+        return s
+
     def write(self, s):
         for fd in self.dispatch_list:
             print >> fd, s,
+        self.buffer += self.toHtml(s)
         if s == '\n' or s.endswith('\n'):
             self.console.write(self.pre + self.buffer + self.post)
             self.buffer = ''
-        else:
-            for k, v in {'>':'&gt;', '<':'&lt;'}.items():
-                s = s.replace(k, v)
-            self.buffer += s
 

@@ -6,7 +6,7 @@ import shutil
 from PySide import QtCore
 from PySide import QtGui
 from PySide.QtCore import Qt
-from debug import curr_f
+from debug import curr_f,pp
 from ui.ui import Ui
 
 class ResourceManager:
@@ -75,13 +75,12 @@ class ResourceManager:
 
         Returns the full url to the new resource, if any.
         """
-        print 'props:', props
         dep = {
             'mesh':['mesh', 'material']
             }
 
         if props['ext'] not in dep:
-            print 'no recorded dependencies for extension \'%s\'.'%props['ext']
+            print curr_f(),': no recorded dependencies for extension \'%s\'.'%props['ext']
             return
 
         src_path_wo_ext = '.'.join(props['url'].split('.')[:-1])
