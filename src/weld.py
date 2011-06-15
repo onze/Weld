@@ -120,6 +120,7 @@ class Weld(Savable):
             if not os.path.exists(rootdir):
                 self.current_project_path = None
                 print >> sys.stderr, 'invalid project path:', rootdir
+                Ui.instance().show_status('invalid project path \'%s\'.'%rootdir)
                 return
 
         print 'Weld.open_project', filename, 'in', rootdir

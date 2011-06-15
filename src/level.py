@@ -24,10 +24,12 @@ class Level(Savable):
         self.name = name
         self.path = levelpath
         self.inanimates = []
+        self.camera_position=QtGui.QVector3D()
+        self.camera_rotation=QtGui.QVector4D()
         self.resMan = None
 
         Savable.__init__(self, savepath=os.path.join(levelpath, self.name + '.lvl'))
-        self.savelist += ['inanimates']
+        self.savelist += ['camera_position', 'camera_rotation', 'inanimates']
         self.resources = {'inanimate':[]}
 
     def attach_to_Ui(self):
@@ -71,12 +73,6 @@ class Level(Savable):
         else:
             print 'unknown resource type'
 
-    def load(self):
-        """
-        Overloads Savable.load() to load into steel all objects of the level.
-        """
-        Savable.load(self)
-
     def on_steel_ready(self):
         """
         triggered by the steelwidget when steel is ready to process commands.
@@ -86,5 +82,15 @@ class Level(Savable):
         for props in self.inanimates:
             print 'restoring', pp(props)
             self.instanciate(props, already_in=True)
+        self.qsteelwidget.cameraPosition(self.camera_position)
+        self.qsteelwidget.cameraRotation(self.camera_rotation)
+
+    def save(self):
+        """
+        Retrieve some data before saving them.
+        """
+        self.camera_position=self.qsteelwidget.cameraPosition()
+        self.camera_rotation=self.qsteelwidget.cameraRotation()
+        Savable.save(self)
 
 
