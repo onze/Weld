@@ -65,7 +65,6 @@ class Project(Savable):
         Savable.save(self)
 
     def new_level(self, props):
-        print curr_f(), ': props=', props
         name = props['name']
         levelpath = os.path.join(self.rootdir, 'levels', name)
         try:

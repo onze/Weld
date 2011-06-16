@@ -1,19 +1,22 @@
 import os.path
 import sys
 
+import config
 import os
 import shutil
 from PySide import QtCore
 from PySide import QtGui
 from PySide.QtCore import Qt
-from debug import curr_f,pp
+from config import Config
+from debug import curr_f
+from debug import pp
 from ui.ui import Ui
 
 class ResourceManager:
     """
     Represents the system of resources that can be loaded in a level.
     """
-    base_dirs = ['inanimate']
+    base_dirs = ['meshes', 'materials']
     def __init__(self, base_path):
         self.base_path = os.path.abspath(base_path)
         self.model = QtGui.QFileSystemModel()
@@ -30,18 +33,18 @@ class ResourceManager:
             url = url[len('file://'):]
         except:
             print type(url)
-            print >> sys.stderr, 'in', curr_f(), 'url must be an url%%%s' % url
+            print >> sys.stderr, 'in', curr_f(), 'url must be an url:', url
             return False
 
         if not os.path.exists(url):
-            print >> sys.stderr, 'in', curr_f(), 'url does not exist %%%s' % url
+            print >> sys.stderr, 'in', curr_f(), 'url does not exist:', url
             return False
 
         relpathdir, filename = os.path.split(os.path.relpath(url, self.base_path))
         if relpathdir.split(os.sep)[0] in ResourceManager.base_dirs:
             return True
         else:
-            print 'relpathdir:',relpathdir
+            print 'relpathdir:', relpathdir
         return False
 
     
@@ -67,34 +70,40 @@ class ResourceManager:
         tree.setRootIsDecorated(False)
         tree.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
-    def add_resource(self, props):
+    def add_resource(self, srcpath, props):
         """
-        Retrieve into base_path the given file info, as well as each file it
-        depends on, according to these rules:
+        Retrieve into base_path the file descripted by the given props, as well
+        as each file it may depends on, according to these rules:
         - <filename>.mesh files depend on <filename>.material
 
         Returns the full url to the new resource, if any.
         """
         dep = {
-            'mesh':['mesh', 'material']
-            }
+            'mesh':['mesh', 'material'],
+        }
 
         if props['ext'] not in dep:
-            print curr_f(),': no recorded dependencies for extension \'%s\'.'%props['ext']
+            print curr_f(), ': no recorded dependencies for extension \'%s\'.' % props['ext']
             return
 
-        src_path_wo_ext = '.'.join(props['url'].split('.')[:-1])
-        dst_path_wo_ext = os.path.join(self.base_path, props['relpath'],props['name'])
-
-        cnt=0
+        #counts the number of dependencies retrived
+        cnt = 0
         for ext in dep[props['ext']]:
-            src = src_path_wo_ext+'.'+ext
-            dst = dst_path_wo_ext+'.'+ext
-            cnt+=self.retrieve_resource(src, dst)
+            dir = Config.instance().resource_ext_to_dirs[ext]
 
-        if cnt==len(dep[props['ext']]):
-            return 'file://'+dst_path_wo_ext+'.'+props['ext']
-        return ''
+            filename = props['name'] + '.' + ext
+            src = os.path.join(srcpath, dir, filename)
+            dst = os.path.join(self.base_path, dir, filename)
+            
+            cnt += self.retrieve_resource(src, dst)
+        
+        if cnt == len(dep[props['ext']]):
+            new_props=dict(props)
+            new_props['url']='file://' + os.path.join(self.base_path,
+                                            Config.instance().resource_ext_to_dirs[props['ext']],
+                                            props['name'] + '.' + props['ext'])
+            return new_props
+        return {}
 
     def file_props(self, url):
         """
@@ -107,7 +116,7 @@ class ResourceManager:
 
         url = str(url[len('file://'):])
         
-        props={}
+        props = {}
         #base url
         props['url'] = url
         #full path, relative to base_path
@@ -130,10 +139,10 @@ class ResourceManager:
         Tries to copy src to dst, and return true if this was possible.
         Copy is skipped if src and dst timestamps are the same.
         """
-#        print 'ResourceManager.retrieve_resource:',src,dst
+        print 'ResourceManager.retrieve_resource:', src,'to',dst
         if not os.path.exists(src):
             return False
-        
+
         dir = os.path.split(dst)[0]
 
         if os.path.exists(dir):
@@ -144,9 +153,9 @@ class ResourceManager:
                     return True
         else:
             os.makedirs(dir)
-        print 'copying', src, 'to', dst,
+        #print 'copying', src, 'to', dst,
         shutil.copyfile(src, dst)
-        print 'done'
+        #print 'done'
         return True
 
 

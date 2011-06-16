@@ -23,14 +23,14 @@ class Level(Savable):
         self.project = project
         self.name = name
         self.path = levelpath
-        self.inanimates = []
+        self.things = []
         self.camera_position=QtGui.QVector3D()
         self.camera_rotation=QtGui.QVector4D()
         self.resMan = None
 
         Savable.__init__(self, savepath=os.path.join(levelpath, self.name + '.lvl'))
-        self.savelist += ['camera_position', 'camera_rotation', 'inanimates']
-        self.resources = {'inanimate':[]}
+        self.savelist += ['camera_position', 'camera_rotation', 'things']
+        self.resources = {'meshes':[]}
 
     def attach_to_Ui(self):
         """
@@ -63,15 +63,15 @@ class Level(Savable):
         If already_in is set to False (default), the object is saved for reload.
         """
         print '<Level \'%s\'>.instanciate():\n%s' % (self.name, pp(props))
-        if props['resource_type'] == 'inanimate':
-            id = self.qsteelwidget.addInanimate(props['name'] + '.' + props['ext'],
+        if props['resource_type'] == 'meshes':
+            id = self.qsteelwidget.createThing(props['meshName'] + '.' + props['ext'],
                                                 props['position'],
                                                 props['rotation'])
             props['id'] = id
             if not already_in:
-                self.inanimates.append(dict(props))
+                self.things.append(dict(props))
         else:
-            print 'unknown resource type'
+            print>>sys.__stderr__, 'Level.instanciate(): unknown resource type'
 
     def on_steel_ready(self):
         """
@@ -79,11 +79,13 @@ class Level(Savable):
         """
         print "<Level %s>.on_steel_ready()" % (self.name)
         self.qsteelwidget.setLevel(self.project.rootdir, self.name)
-        for props in self.inanimates:
+        for props in self.things:
             print 'restoring', pp(props)
             self.instanciate(props, already_in=True)
-        self.qsteelwidget.cameraPosition(self.camera_position)
-        self.qsteelwidget.cameraRotation(self.camera_rotation)
+        if self.camera_position!=QtGui.QVector3D(.0, .0, .0):
+            self.qsteelwidget.cameraPosition(self.camera_position)
+        if self.camera_rotation!=QtGui.QVector4D(.0, .0, .0, .0):
+            self.qsteelwidget.cameraRotation(self.camera_rotation)
 
     def save(self):
         """

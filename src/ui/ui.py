@@ -131,6 +131,7 @@ class Ui(QtGui.QMainWindow,object):
             if Config.instance().show_ogre_init:
                 qsteelwidget.onNewLogLine.connect(Console.write)
             qsteelwidget.onItemDropped.connect(self.weld.on_item_dropped)
+            qsteelwidget.onThingsSelected.connect(self.weld.on_things_selected)
             self.central_widget['widget'].addTab(qsteelwidget, 'Steel view')
         return self.central_widget['qsteelwidget']
 

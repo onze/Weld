@@ -15,6 +15,7 @@ from project import Project
 from resourcemanager import ResourceManager
 from ui.ui import Ui
 from savable import Savable
+from debug import pp,curr_f
 
 class Weld(Savable):
     """
@@ -90,20 +91,30 @@ class Weld(Savable):
         if not(self.project and self.project.level):
             print >> sys.stderr, 'too early to drop: create a project and a level first.'
             return
+
         #retrieve data if it comes from weld
         if url in self.resMan:
             props = self.resMan.file_props(url)
-            url = self.project.level.resMan.add_resource(props)
+            props = self.project.level.resMan.add_resource(self.resMan.base_path,props)
+            url=props['url']
+            if props=={} or url not in self.project.level.resMan:
+                print>>sys.stderr,curr_f(),'could not retrieve file and/or dependencies for props:',pp(props)
+                return
+
         #instanciate it
         if url in self.project.level.resMan:
             props = self.project.level.resMan.file_props(url)
-            dtp=self.project.level.qsteelwidget.dropTargetPosition(Config.instance().drop_target_vec)
+            dtp = self.project.level.qsteelwidget.dropTargetPosition(Config.instance().drop_target_vec)
             props['position'] = dtp
-            props['rotation']=self.project.level.qsteelwidget.dropTargetRotation()
-            self.project.level.instanciate(props)
-            s = 'dropped inanimate \'%s\' with id %i' % (props['name'], props['id'])
-            print s
-            Ui.instance().show_status(s)
+            props['rotation'] = self.project.level.qsteelwidget.dropTargetRotation()
+            if props['resource_type'] == 'meshes':
+                props['meshName'] = props['name']
+                self.project.level.instanciate(props)
+                s = 'dropped thing \'%s\' with id %i' % (props['name'], props['id'])
+                print s
+                Ui.instance().show_status(s)
+            else:
+                Ui.instance().show_status('can only drop meshes so far')
 
     def open_project(self, rootdir=None, filename=None):
         if None in [rootdir, filename]:
@@ -120,7 +131,7 @@ class Weld(Savable):
             if not os.path.exists(rootdir):
                 self.current_project_path = None
                 print >> sys.stderr, 'invalid project path:', rootdir
-                Ui.instance().show_status('invalid project path \'%s\'.'%rootdir)
+                Ui.instance().show_status('invalid project path \'%s\'.' % rootdir)
                 return
 
         print 'Weld.open_project', filename, 'in', rootdir
@@ -131,6 +142,9 @@ class Weld(Savable):
         self.current_project_path = rootdir
         Ui.instance().set_resources_draggable(True)
         Ui.instance().show_status('project %s opened' % (filename))
+
+    def on_things_selected(self, *args,  ** kwargs):
+        print 'Weld.on_things_selected:', args, kwargs
 
     def on_quit(self):
         print 'Weld.on_quit()'
