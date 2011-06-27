@@ -10,6 +10,7 @@ from savable import Savable
 from ui.ui import Ui
 from resourcemanager import ResourceManager
 from debug import pp
+import weld
 
 class Level(Savable):
 
@@ -86,6 +87,7 @@ class Level(Savable):
             self.qsteelwidget.cameraPosition(self.camera_position)
         if self.camera_rotation!=QtGui.QVector4D(.0, .0, .0, .0):
             self.qsteelwidget.cameraRotation(self.camera_rotation)
+        weld.Weld.instance().on_steel_ready(self.qsteelwidget)
 
     def save(self):
         """

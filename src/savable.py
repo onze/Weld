@@ -1,6 +1,7 @@
 import os.path
 import sys
 import cPickle as pickle
+from debug import curr_f
 
 class Savable(object):
     """
@@ -26,7 +27,10 @@ class Savable(object):
             unpickled = pickle.load(file)
             file.close()
             for k, v in unpickled.items():
-                setattr(self, k, unpickled[k])
+                if k in unpickled:
+                    setattr(self, k, unpickled[k])
+                else:
+                    print>>sys.err,curr_f(),'could not load attribute \'%s\''%k
 
     def save(self):
         """

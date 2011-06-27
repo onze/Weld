@@ -13,11 +13,11 @@ class Console(QtGui.QPlainTextEdit):
                             post='</span>',
                             dispatch_list=[sys.__stdout__]
                             )
-        #sys.stderr = Writer(self,
-        #                    pre='<span style="color:red">',
-        #                    post='</span>',
-        #                    dispatch_list=[sys.__stderr__]
-        #                    )
+        sys.stderr = Writer(self,
+                            pre='<span style="color:red">',
+                            post='</span>',
+                            dispatch_list=[sys.__stderr__]
+                            )
         sys.warning = Writer(self,
                              pre='<span style="color:orange">',
                              post='</span>',
@@ -26,8 +26,7 @@ class Console(QtGui.QPlainTextEdit):
 
     def _write(self, s):
         self.textCursor().insertHtml(s)
-        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-
+        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum()-2)
 
     @staticmethod
     def write(s):
@@ -56,7 +55,7 @@ class Writer:
     def write(self, s):
         for fd in self.dispatch_list:
             print >> fd, s,
-        self.buffer += self.toHtml(s)
+        self.buffer+=self.toHtml(s)
         if s == '\n' or s.endswith('\n'):
             self.console.write(self.pre + self.buffer + self.post)
             self.buffer = ''

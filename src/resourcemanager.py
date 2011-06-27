@@ -1,7 +1,6 @@
 import os.path
 import sys
 
-import config
 import os
 import shutil
 from PySide import QtCore

@@ -21,7 +21,11 @@ class Weld(Savable):
     """
     Main class of the editor.
     """
+    #singleton
+    __instance =None
+
     def __init__(self, parent=None):
+        Weld.__instance=self
         Savable.__init__(self, savepath=os.path.join(sys.path[0], 'weld.cache'))
         self.savelist += ['current_project_path']
         self.current_project_path = None
@@ -41,6 +45,7 @@ class Weld(Savable):
         if Config.instance().on_open_reopen_last_project:
             if self.current_project_path is not None:
                 print 'auto reopening project %s.' % self.current_project_path
+                print Weld.instance()
                 p, f = os.path.split(self.current_project_path)
                 self.open_project(self.current_project_path, f)
             else:
@@ -51,6 +56,12 @@ class Weld(Savable):
     def close_project(self):
         Ui.instance().set_resources_draggable(False)
         raise NotImplementedError()
+
+    @staticmethod
+    def instance():
+        if Weld.__instance is None:
+            raise Exception('weld instance is None ? Oo')
+        return Weld.__instance
 
     def new_level(self, props={}):
         """
@@ -143,8 +154,17 @@ class Weld(Savable):
         Ui.instance().set_resources_draggable(True)
         Ui.instance().show_status('project %s opened' % (filename))
 
-    def on_things_selected(self, *args,  ** kwargs):
-        print 'Weld.on_things_selected:', args, kwargs
+    def on_steel_closing(self,qsteelwidget):
+        p=os.path.join(self.current_project_path,Config.instance().weld_data_path,'editor')
+        qsteelwidget.removeResourceLocation(p,Config.instance().weld_resource_group)
+
+    def on_steel_ready(self,qsteelwidget):
+        qsteelwidget.onSteelClosing.connect(self.on_steel_closing)
+        p=os.path.join(self.current_project_path,Config.instance().weld_data_path,'editor')
+        qsteelwidget.addResourceLocation(p,'FileSystem',Config.instance().weld_resource_group)
+
+    def on_things_selected(self, thingIds):
+        print 'Weld.on_things_selected() ids:', thingIds
 
     def on_quit(self):
         print 'Weld.on_quit()'

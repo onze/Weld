@@ -1,0 +1,10 @@
+This file is nothing formal, just a reminder of what is still to do, and what is done.
+
+TODO:
+- make object selectable [steel, weld]
+- move/rotate/scale objects [weld]
+
+IN BETWEEN:
+
+DONE:
+- implement camera position/rotation persistence [steel, weld]

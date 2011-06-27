@@ -6,20 +6,22 @@ try:
     import weld_conf as conf
 except IOError, e:
     print 'could not find config file \'weld_conf.py\'.'
+
     #setup default conf
-    class conf:pass
-    conf.debug = False
+    class conf:
+        debug = False
 
-    conf.weld_data_path = 'data'
-    resource_ext_to_dirs = {
-        'mesh':'meshes',
-        'material':'materials'
-    }
+        weld_data_path = 'data'
+        resource_ext_to_dirs = {
+            'mesh':'meshes',
+            'material':'materials'
+        }
+        weld_resource_group = 'weld_internals'
 
-    conf.show_ogre_init = False
-    drop_target_vec = (.0, -1., -10.)
-    
-    conf.project_data_path = 'data'
+        show_ogre_init = False
+        drop_target_vec = (.0, -1., -10.)
+
+        project_data_path = 'data'
 
 class Config:
     """
