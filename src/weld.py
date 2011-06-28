@@ -159,7 +159,9 @@ class Weld(Savable):
         qsteelwidget.removeResourceLocation(p,Config.instance().weld_resource_group)
 
     def on_steel_ready(self,qsteelwidget):
+        #make sure we know when to clean what follows
         qsteelwidget.onSteelClosing.connect(self.on_steel_closing)
+        #add editing specific resources location
         p=os.path.join(self.current_project_path,Config.instance().weld_data_path,'editor')
         qsteelwidget.addResourceLocation(p,'FileSystem',Config.instance().weld_resource_group)
 

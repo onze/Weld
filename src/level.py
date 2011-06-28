@@ -24,9 +24,10 @@ class Level(Savable):
         self.project = project
         self.name = name
         self.path = levelpath
+        #TODO:use a dict [id:{props}]
         self.things = []
-        self.camera_position=QtGui.QVector3D()
-        self.camera_rotation=QtGui.QVector4D()
+        self.camera_position = QtGui.QVector3D()
+        self.camera_rotation = QtGui.QVector4D()
         self.resMan = None
 
         Savable.__init__(self, savepath=os.path.join(levelpath, self.name + '.lvl'))
@@ -49,6 +50,7 @@ class Level(Savable):
         else:
             print 'will wait for steel to be ready before loading.'
             self.qsteelwidget.onSteelReady.connect(self.on_steel_ready)
+            self.qsteelwidget.onThingUpdated.connect(self.on_thing_updated)
         Ui.instance().level_name = self.name
         
     def close(self):
@@ -66,13 +68,13 @@ class Level(Savable):
         print '<Level \'%s\'>.instanciate():\n%s' % (self.name, pp(props))
         if props['resource_type'] == 'meshes':
             id = self.qsteelwidget.createThing(props['meshName'] + '.' + props['ext'],
-                                                props['position'],
-                                                props['rotation'])
+                                               props['position'],
+                                               props['rotation'])
             props['id'] = id
             if not already_in:
                 self.things.append(dict(props))
         else:
-            print>>sys.__stderr__, 'Level.instanciate(): unknown resource type'
+            print >> sys.__stderr__, 'Level.instanciate(): unknown resource type'
 
     def on_steel_ready(self):
         """
@@ -83,18 +85,28 @@ class Level(Savable):
         for props in self.things:
             print 'restoring', pp(props)
             self.instanciate(props, already_in=True)
-        if self.camera_position!=QtGui.QVector3D(.0, .0, .0):
+        if self.camera_position != QtGui.QVector3D(.0, .0, .0):
             self.qsteelwidget.cameraPosition(self.camera_position)
-        if self.camera_rotation!=QtGui.QVector4D(.0, .0, .0, .0):
+        if self.camera_rotation != QtGui.QVector4D(.0, .0, .0, .0):
             self.qsteelwidget.cameraRotation(self.camera_rotation)
         weld.Weld.instance().on_steel_ready(self.qsteelwidget)
+
+    def on_thing_updated(self, id, property, value):
+        for thing in self.things:
+            if thing['id'] == id:
+                if property in thing:
+                    thing[property] = value
+                else:
+                    print >> sys.__stderr__, 'ERROR in on_thing_updated(self, id=%i, \
+property=%s, value=%s): unknown property. skipping'% (id, property, str(value))
+                break
 
     def save(self):
         """
         Retrieve some data before saving them.
         """
-        self.camera_position=self.qsteelwidget.cameraPosition()
-        self.camera_rotation=self.qsteelwidget.cameraRotation()
+        self.camera_position = self.qsteelwidget.cameraPosition()
+        self.camera_rotation = self.qsteelwidget.cameraRotation()
         Savable.save(self)
 
 
