@@ -29,6 +29,10 @@ class Config:
     """
     __instance = None
     def __init__(self):
+        if Config.__instance is None:
+            Config.__instance=self
+        else:
+            raise Exception('can declare new Config instance. Config is a singleton.')
         #first do a basic copy of the config
         for k, v in conf.__dict__.items():
             self.__dict__[k] = v

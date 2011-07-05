@@ -10,7 +10,8 @@ weld_data_path = 'data'
 
 resource_ext_to_dirs = {
     'mesh':'meshes',
-    'material':'materials'
+    'material':'materials',
+    'png':'materials',
 }
 
 #ogre resource group of internal 3d models

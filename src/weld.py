@@ -25,7 +25,10 @@ class Weld(Savable):
     __instance =None
 
     def __init__(self, parent=None):
-        Weld.__instance=self
+        if Weld.__instance is None:
+            Weld.__instance=self
+        else:
+            raise Exception('can declare new Weld instance. Weld is a singleton.')
         Savable.__init__(self, savepath=os.path.join(sys.path[0], 'weld.cache'))
         self.savelist += ['current_project_path']
         self.current_project_path = None
@@ -45,7 +48,6 @@ class Weld(Savable):
         if Config.instance().on_open_reopen_last_project:
             if self.current_project_path is not None:
                 print 'auto reopening project %s.' % self.current_project_path
-                print Weld.instance()
                 p, f = os.path.split(self.current_project_path)
                 self.open_project(self.current_project_path, f)
             else:
@@ -106,6 +108,9 @@ class Weld(Savable):
         #retrieve data if it comes from weld
         if url in self.resMan:
             props = self.resMan.file_props(url)
+            if props is None:
+                print>>sys.stderr,curr_f(),': url(\'%s\') in self.resMan but can\'t retrieve props.'%(url)
+                return
             props = self.project.level.resMan.add_resource(self.resMan.base_path,props)
             url=props['url']
             if props=={} or url not in self.project.level.resMan:
@@ -162,7 +167,7 @@ class Weld(Savable):
         #make sure we know when to clean what follows
         qsteelwidget.onSteelClosing.connect(self.on_steel_closing)
         #add editing specific resources location
-        p=os.path.join(self.current_project_path,Config.instance().weld_data_path,'editor')
+        p=os.path.join(self.current_project_path,Config.instance().weld_data_path,'resources')
         qsteelwidget.addResourceLocation(p,'FileSystem',Config.instance().weld_resource_group)
 
     def on_things_selected(self, thingIds):

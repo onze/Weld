@@ -26,7 +26,10 @@ class Ui(QtGui.QMainWindow,object):
     __instance = None
 
     def __init__(self, weld):
-        Ui.__instance = self
+        if Ui.__instance is None:
+            Ui.__instance=self
+        else:
+            raise Exception('can declare new Ui instance. Ui is a singleton.')
         self.app = QtGui.QApplication(sys.argv)
         QtGui.QMainWindow.__init__(self, None)
         self.weld = weld

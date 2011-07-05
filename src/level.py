@@ -40,7 +40,7 @@ class Level(Savable):
         """
         print '<Level \'%s\'>.attach_to_Ui():' % (self.name),
 
-        self.resMan = ResourceManager(self.path)
+        self.resMan = ResourceManager(self.path, level=self)
         self.resMan.attach_to_Ui(Ui.instance().res_browser['level'])
         
         self.qsteelwidget = Ui.instance().qsteelwidget
@@ -50,7 +50,6 @@ class Level(Savable):
         else:
             print 'will wait for steel to be ready before loading.'
             self.qsteelwidget.onSteelReady.connect(self.on_steel_ready)
-            self.qsteelwidget.onThingUpdated.connect(self.on_thing_updated)
         Ui.instance().level_name = self.name
         
     def close(self):
@@ -59,6 +58,16 @@ class Level(Savable):
         """
         if self.qsteelwidget:
             self.qsteelwidget.close()
+
+    def already_loaded(self, properties):
+        """
+        Returns true if the resources
+        """
+        name = properties['meshName'] + '.' + properties['ext']
+        for id, props in self.things:
+            if name == props['meshName'] + '.' + props['ext']:
+                return True
+        return False
 
     def instanciate(self, props, already_in=False):
         """
@@ -69,7 +78,8 @@ class Level(Savable):
         if props['resource_type'] == 'meshes':
             id = self.qsteelwidget.createThing(props['meshName'] + '.' + props['ext'],
                                                props['position'],
-                                               props['rotation'])
+                                               props['rotation'],
+                                               not already_in)
             props['id'] = id
             if not already_in:
                 self.things.append(dict(props))
@@ -81,15 +91,24 @@ class Level(Savable):
         triggered by the steelwidget when steel is ready to process commands.
         """
         print "<Level %s>.on_steel_ready()" % (self.name)
+        self.resMan.qsteelwidget = self.qsteelwidget
+        self.qsteelwidget.onThingUpdated.connect(self.on_thing_updated)
+        self.qsteelwidget.onThingsDeleted.connect(self.on_things_deleted)
         self.qsteelwidget.setLevel(self.project.rootdir, self.name)
         for props in self.things:
-            print 'restoring', pp(props)
+            print "restoring:"
             self.instanciate(props, already_in=True)
         if self.camera_position != QtGui.QVector3D(.0, .0, .0):
             self.qsteelwidget.cameraPosition(self.camera_position)
         if self.camera_rotation != QtGui.QVector4D(.0, .0, .0, .0):
             self.qsteelwidget.cameraRotation(self.camera_rotation)
         weld.Weld.instance().on_steel_ready(self.qsteelwidget)
+
+    def on_things_deleted(self, ids):
+        to_delete = [i for i, t in enumerate(self.things) if t['id'] in ids]
+        while to_delete:
+            del self.things[to_delete[0]]
+            to_delete.pop(0)
 
     def on_thing_updated(self, id, property, value):
         for thing in self.things:
@@ -98,7 +117,7 @@ class Level(Savable):
                     thing[property] = value
                 else:
                     print >> sys.__stderr__, 'ERROR in on_thing_updated(self, id=%i, \
-property=%s, value=%s): unknown property. skipping'% (id, property, str(value))
+property=%s, value=%s): unknown property. skipping' % (id, property, str(value))
                 break
 
     def save(self):
