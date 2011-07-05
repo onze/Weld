@@ -1,10 +1,14 @@
 This file is nothing formal, just a reminder of what is still to do, and what is done.
 
 TODO:
-- make object selectable [steel, weld]
-- move/rotate/scale objects [weld]
+- build BTModel and stuff around it to make things react. [steel, weld]
+- include bullet to handle physics. [steel]
+- remove from level directory all dependencies to a deleted file
 
 IN BETWEEN:
+- move/rotate/scale objects [weld]
 
 DONE:
-- implement camera position/rotation persistence [steel, weld]
+- make things deletable [weld, steel]
+- make object selectable [steel, weld]
+- implement camera position/rotation persistence [steel, weld] (mouse+shift)
