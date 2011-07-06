@@ -1,5 +1,6 @@
 import os.path
 import sys
+import time
 
 import os
 import shutil
@@ -25,6 +26,13 @@ class ResourceManager:
         #hide files that don't pass filters (instead of disabling them only)
         self.model.setNameFilterDisables(False)
         self.model.setRootPath(self.base_path)
+        #refcount of files. see incRefCount and decRefCount for details.
+        self.refcount = {}
+        if self.level:
+            #folder into which useless files are moved to.
+            self.trash_path = os.path.join(self.level.project.rootdir,
+                                           Config.instance().weld_trash_folder,
+                                           )
         print 'ResourceManager started with root', self.base_path
 
     def __contains__(self, _url):
@@ -82,17 +90,14 @@ class ResourceManager:
         Also, it makes sure all needed resource are available in ogre (if props
         are valid).
         """
-        dep = {
-            'mesh':['mesh', 'material', 'png'],
-        }
 
-        if props['ext'] not in dep:
+        if props['ext'] not in Config.instance().res_dep:
             print curr_f(), ': no recorded dependencies for extension \'%s\'.' % props['ext']
             return
 
         #counts the number of dependencies retrieved
         cnt = 0
-        for ext in dep[props['ext']]:
+        for ext in Config.instance().res_dep[props['ext']]:
             dir = Config.instance().resource_ext_to_dirs[ext]
 
             filename = props['name'] + '.' + ext
@@ -102,12 +107,10 @@ class ResourceManager:
             if self.retrieve_resource(src, dst):
                 cnt += 1
             else:
-                print >> sys.stderr, 'could not retrive dependency \'%s\' for props' % ext, props
-
-        
+                print >> sys.stderr, 'could not retrieve dependency \'%s\' for props' % ext, props
 
         #did we retrieve as many dependencies as needed ?
-        if cnt == len(dep[props['ext']]):
+        if cnt == len(Config.instance().res_dep[props['ext']]):
             new_props = dict(props)
             new_props['url'] = 'file://' + os.path.join(self.base_path,
                                                         Config.instance().resource_ext_to_dirs[props['ext']],
@@ -146,6 +149,31 @@ class ResourceManager:
             print 'props:', props
             raise
         return props
+
+    def inc_refcount(self, props):
+        for ext in Config.instance().res_dep[props['ext']]:
+            filepath = os.path.join(self.base_path,
+                                    Config.instance().resource_ext_to_dirs[ext],
+                                    props['name'] + '.' + ext
+                                    )
+            self.refcount[filepath] = self.refcount.setdefault(filepath, 0) + 1
+
+    def dec_refcount(self, props):
+        for ext in Config.instance().res_dep[props['ext']]:
+            filepath = os.path.join(self.base_path,
+                                    Config.instance().resource_ext_to_dirs[ext],
+                                    props['name'] + '.' + ext
+                                    )
+            self.refcount[filepath] = self.refcount.setdefault(filepath, 0)-1
+
+            if self.refcount[filepath] <= 0:
+                dst_folder = os.path.join(self.trash_path,
+                                          time.strftime('%Y%m%d-%H:%M:%S'))
+                if not os.path.exists(dst_folder):
+                    os.makedirs(dst_folder)
+                dst = os.path.join(dst_folder, props['name'] + '.' + ext)
+                shutil.move(filepath, dst)
+                print 'ResourceManager: \'%s\' staged to \'%s\' (refcount==0).' %(filepath,dst)
 
     def retrieve_resource(self, src, dst):
         """

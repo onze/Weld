@@ -59,16 +59,6 @@ class Level(Savable):
         if self.qsteelwidget:
             self.qsteelwidget.close()
 
-    def already_loaded(self, properties):
-        """
-        Returns true if the resources
-        """
-        name = properties['meshName'] + '.' + properties['ext']
-        for id, props in self.things:
-            if name == props['meshName'] + '.' + props['ext']:
-                return True
-        return False
-
     def instanciate(self, props, already_in=False):
         """
         Make Steel instanciate an object according to the given props.
@@ -76,6 +66,7 @@ class Level(Savable):
         """
         print '<Level \'%s\'>.instanciate():\n%s' % (self.name, pp(props))
         if props['resource_type'] == 'meshes':
+            self.resMan.inc_refcount(props)
             id = self.qsteelwidget.createThing(props['meshName'] + '.' + props['ext'],
                                                props['position'],
                                                props['rotation'],
@@ -107,6 +98,7 @@ class Level(Savable):
     def on_things_deleted(self, ids):
         to_delete = [i for i, t in enumerate(self.things) if t['id'] in ids]
         while to_delete:
+            self.resMan.dec_refcount(self.things[to_delete[0]])
             del self.things[to_delete[0]]
             to_delete.pop(0)
 

@@ -3,3 +3,5 @@
 *.log
 *.cache
 *.directory
+*.blend1
+*.mesh.xml

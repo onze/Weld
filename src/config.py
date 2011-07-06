@@ -12,11 +12,16 @@ except IOError, e:
         debug = False
 
         weld_data_path = 'data'
+        weld_resource_group = 'weld_internals'
+        weld_trash_folder='trash'
+
         resource_ext_to_dirs = {
             'mesh':'meshes',
             'material':'materials'
         }
-        weld_resource_group = 'weld_internals'
+        res_dep = {
+            'mesh':['mesh', 'material', 'png'],
+        }
 
         show_ogre_init = False
         drop_target_vec = (.0, -1., -10.)
@@ -45,7 +50,6 @@ class Config:
             #TODO: insert special cases here
             return self.__dict__[name]
         else:
-
             raise Exception('there is no such config attribute as \'%s\'. Config dump:%s' % (name, dir(self)))
 
     @staticmethod

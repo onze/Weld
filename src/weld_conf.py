@@ -8,16 +8,25 @@ debug = True
 #path to resources that can be loaded by steel
 weld_data_path = 'data'
 
+#ogre resource group of internal 3d models
+weld_resource_group='weld_internals'
+
+#name of the folder where useless files are moved to
+weld_trash_folder='trash'
+
+###############################resources browser
+#files dragged from weld resource browser can have a list of other files they
+#depend on. this dictionary lists them.
+res_dep = {
+            'mesh':['mesh', 'material', 'png'],
+        }
+
+#this dict tells in what folder to find files, given their extension.
 resource_ext_to_dirs = {
     'mesh':'meshes',
     'material':'materials',
     'png':'materials',
 }
-
-#ogre resource group of internal 3d models
-weld_resource_group='weld_internals'
-
-###############################resources browser
 
 
 ###############################qsteelwidget
