@@ -1,14 +1,20 @@
-This file is nothing formal, just a reminder of what is still to do, and what is done.
+This file is nothing formal, just a reminder of what there is to do, and what has been done.
 
-TODO:
+== TODO ==
 - build BTModel and stuff around it to make things react. [steel, weld]
 - include bullet to handle physics. [steel]
-- remove from level directory all dependencies to a deleted file
+- rename Thing into Agent [weld,steel]
+- make the model manager singleton [steel]
 
-IN BETWEEN:
+== IN BETWEEN ==
 - move/rotate/scale objects [weld]
 
-DONE:
+== DONE ==
+
+2011-07-06
+- remove from level directory all dependencies to a deleted file [weld]
+
+2011-undated
 - make things deletable [weld, steel]
 - make object selectable [steel, weld]
 - implement camera position/rotation persistence [steel, weld] (mouse+shift)

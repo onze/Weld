@@ -126,7 +126,7 @@ class Weld(Savable):
             if props['resource_type'] == 'meshes':
                 props['meshName'] = props['name']
                 self.project.level.instanciate(props)
-                s = 'dropped thing \'%s\' with id %i' % (props['name'], props['id'])
+                s = 'dropped agent \'%s\' with id %i' % (props['name'], props['id'])
                 print s
                 Ui.instance().show_status(s)
             else:
@@ -170,8 +170,8 @@ class Weld(Savable):
         p=os.path.join(self.current_project_path,Config.instance().weld_data_path,'resources')
         qsteelwidget.addResourceLocation(p,'FileSystem',Config.instance().weld_resource_group)
 
-    def on_things_selected(self, thingIds):
-        print 'Weld.on_things_selected() ids:', thingIds
+    def on_agents_selected(self, agentIds):
+        print 'Weld.on_agents_selected() ids:', agentIds
 
     def on_quit(self):
         print 'Weld.on_quit()'

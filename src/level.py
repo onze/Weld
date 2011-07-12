@@ -25,13 +25,13 @@ class Level(Savable):
         self.name = name
         self.path = levelpath
         #TODO:use a dict [id:{props}]
-        self.things = []
+        self.agents = []
         self.camera_position = QtGui.QVector3D()
         self.camera_rotation = QtGui.QVector4D()
         self.resMan = None
 
         Savable.__init__(self, savepath=os.path.join(levelpath, self.name + '.lvl'))
-        self.savelist += ['camera_position', 'camera_rotation', 'things']
+        self.savelist += ['camera_position', 'camera_rotation', 'agents']
         self.resources = {'meshes':[]}
 
     def attach_to_Ui(self):
@@ -67,13 +67,13 @@ class Level(Savable):
         print '<Level \'%s\'>.instanciate():\n%s' % (self.name, pp(props))
         if props['resource_type'] == 'meshes':
             self.resMan.inc_refcount(props)
-            id = self.qsteelwidget.createThing(props['meshName'] + '.' + props['ext'],
+            id = self.qsteelwidget.createAgent(props['meshName'] + '.' + props['ext'],
                                                props['position'],
                                                props['rotation'],
                                                not already_in)
             props['id'] = id
             if not already_in:
-                self.things.append(dict(props))
+                self.agents.append(dict(props))
         else:
             print >> sys.__stderr__, 'Level.instanciate(): unknown resource type'
 
@@ -83,10 +83,10 @@ class Level(Savable):
         """
         print "<Level %s>.on_steel_ready()" % (self.name)
         self.resMan.qsteelwidget = self.qsteelwidget
-        self.qsteelwidget.onThingUpdated.connect(self.on_thing_updated)
-        self.qsteelwidget.onThingsDeleted.connect(self.on_things_deleted)
+        self.qsteelwidget.onAgentUpdated.connect(self.on_agent_updated)
+        self.qsteelwidget.onAgentsDeleted.connect(self.on_agents_deleted)
         self.qsteelwidget.setLevel(self.project.rootdir, self.name)
-        for props in self.things:
+        for props in self.agents:
             print "restoring:"
             self.instanciate(props, already_in=True)
         if self.camera_position != QtGui.QVector3D(.0, .0, .0):
@@ -95,20 +95,20 @@ class Level(Savable):
             self.qsteelwidget.cameraRotation(self.camera_rotation)
         weld.Weld.instance().on_steel_ready(self.qsteelwidget)
 
-    def on_things_deleted(self, ids):
-        to_delete = [i for i, t in enumerate(self.things) if t['id'] in ids]
+    def on_agents_deleted(self, ids):
+        to_delete = [i for i, t in enumerate(self.agents) if t['id'] in ids]
         while to_delete:
-            self.resMan.dec_refcount(self.things[to_delete[0]])
-            del self.things[to_delete[0]]
+            self.resMan.dec_refcount(self.agents[to_delete[0]])
+            del self.agents[to_delete[0]]
             to_delete.pop(0)
 
-    def on_thing_updated(self, id, property, value):
-        for thing in self.things:
-            if thing['id'] == id:
-                if property in thing:
-                    thing[property] = value
+    def on_agent_updated(self, id, property, value):
+        for agent in self.agents:
+            if agent['id'] == id:
+                if property in agent:
+                    agent[property] = value
                 else:
-                    print >> sys.__stderr__, 'ERROR in on_thing_updated(self, id=%i, \
+                    print >> sys.__stderr__, 'ERROR in on_agent_updated(self, id=%i, \
 property=%s, value=%s): unknown property. skipping' % (id, property, str(value))
                 break
 
