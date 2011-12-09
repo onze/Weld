@@ -4,6 +4,7 @@ __author__ = "onze"
 __date__ = "$7-May-2011 7:48:35 PM$"
 
 import os
+import sys
 from PySide import QtGui
 from config import Config
 from savable import Savable
@@ -29,16 +30,23 @@ class Level(Savable):
         self.camera_position = QtGui.QVector3D()
         self.camera_rotation = QtGui.QVector4D()
         self.resMan = None
+        self.qsteelwidget = None
 
-        Savable.__init__(self, savepath=os.path.join(levelpath, self.name + '.lvl'))
+        Savable.__init__(self, savepath=os.path.join(self.path, self.name + '.weld.lvl'))
         self.savelist += ['camera_position', 'camera_rotation', 'agents']
         self.resources = {'meshes':[]}
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return '<Level \'%s\'@%s>' % (self.name, self.path)
 
     def attach_to_Ui(self):
         """
         Links the level with its views.
         """
-        print '<Level \'%s\'>.attach_to_Ui():' % (self.name),
+        print '<Level \'%s\'>.attach_to_Ui():' % (self.name)
 
         self.resMan = ResourceManager(self.path, level=self)
         self.resMan.attach_to_Ui(Ui.instance().res_browser['level'])
@@ -79,19 +87,22 @@ class Level(Savable):
 
     def on_steel_ready(self):
         """
-        triggered by the steelwidget when steel is ready to process commands.
+        triggered by the qsteelwidget when steel is ready to process commands.
         """
         print "<Level %s>.on_steel_ready()" % (self.name)
         self.resMan.qsteelwidget = self.qsteelwidget
         self.qsteelwidget.onAgentUpdated.connect(self.on_agent_updated)
         self.qsteelwidget.onAgentsDeleted.connect(self.on_agents_deleted)
         self.qsteelwidget.setLevel(self.project.rootdir, self.name)
-        for props in self.agents:
-            print "restoring:"
-            self.instanciate(props, already_in=True)
-        if self.camera_position != QtGui.QVector3D(.0, .0, .0):
+        if len(self.agents):
+            for props in self.agents:
+                print "restoring:"
+                self.instanciate(props, already_in=True)
+        else:
+            print 'no agent to restore.'
+        if self.camera_position != QtGui.QVector3D():
             self.qsteelwidget.cameraPosition(self.camera_position)
-        if self.camera_rotation != QtGui.QVector4D(.0, .0, .0, .0):
+        if self.camera_rotation != QtGui.QVector4D():
             self.qsteelwidget.cameraRotation(self.camera_rotation)
         weld.Weld.instance().on_steel_ready(self.qsteelwidget)
 
@@ -116,6 +127,7 @@ property=%s, value=%s): unknown property. skipping' % (id, property, str(value))
         """
         Retrieve some data before saving them.
         """
+        self.qsteelwidget.saveCurrentLevel()
         self.camera_position = self.qsteelwidget.cameraPosition()
         self.camera_rotation = self.qsteelwidget.cameraRotation()
         Savable.save(self)

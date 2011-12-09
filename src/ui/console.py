@@ -23,16 +23,31 @@ class Console(QtGui.QPlainTextEdit):
                              post='</span>',
                              dispatch_list=[sys.__stderr__]
                              )
+        print 'console ready'
 
-    def _write(self, s):
-        self.textCursor().insertHtml(s)
-        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum()-2)
+    def _write(self, s, pre, post):
+        s=pre+self.toHtml(s)+post
+        self.textCursor().insertHtml(s+'<br>')
+        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum()-3)
+
+    def toHtml(self,s):
+        """
+        Transform the given string into its html equivalent.
+        """
+        for k, v in [('>','&gt;'),
+            ('<','&lt;'),
+            ('\n','<br>'),
+            ('\t','&nbsp;&nbsp;&nbsp;&nbsp;'),
+            (' ','&nbsp;'),
+            ]:
+            s = s.replace(k, v)
+        return s
 
     @staticmethod
-    def write(s):
+    def write(s,pre='',post=''):
         if not Console.instance:
             Console()
-        Console.instance._write(s)
+        Console.instance._write(s,pre,post)
 
 class Writer:
 
@@ -43,20 +58,11 @@ class Writer:
         self.post = post
         self.dispatch_list = dispatch_list
 
-    def toHtml(self,s):
-        for k, v in [('>','&gt;'),
-            ('<','&lt;'),
-            ('\n','<br>'),
-            ('\t','&nbsp;&nbsp;&nbsp;&nbsp;')
-            ]:
-            s = s.replace(k, v)
-        return s
-
     def write(self, s):
         for fd in self.dispatch_list:
             print >> fd, s,
-        self.buffer+=self.toHtml(s)
+        self.buffer+=s
         if s == '\n' or s.endswith('\n'):
-            self.console.write(self.pre + self.buffer + self.post)
+            self.console.write(self.buffer,pre=self.pre,post=self.post)
             self.buffer = ''
 

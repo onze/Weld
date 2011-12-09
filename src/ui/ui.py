@@ -1,13 +1,9 @@
 
 import os.path
 
-
-__author__ = "onze"
-__date__ = "$7-May-2011 4:24:35 PM$"
-
 import sys
-
 import os
+
 from PySide import QtCore
 from PySide import QtGui
 from PySide.QtCore import Qt
@@ -16,18 +12,30 @@ from config import Config
 from console import Console, Writer
 from levelcreationdialog import LevelCreationDialog
 
-#libPyQSteelWidget.so is expected to be located in the current directory.
-#This shared library contains the Steel engine binding widget. You can compile
-#it with the QSteelWidget project @ 
-QSteelWidget = __import__('PyQSteelWidget').QSteelWidget
 
-class Ui(QtGui.QMainWindow,object):
+
+
+try:
+    from PyQSteelWidget import QSteelWidget
+    #print 'dir(QSteelWidget):'
+    #print '\t','\n\t'.join(sorted(dir(QSteelWidget)))
+except Exception, e:
+    print>>sys.__stderr__, 'Caught an exception while loading the qsteelwidget.\n' \
+        'libPyQSteelWidget.so is expected to be located in the current directory,' \
+        'or its directory to be part of LD_LIBRARY_PATH.\n' \
+        'This shared library contains the Steel engine binding widget. You can '\
+        'download it from https://github.com/onze/QSteelWidget \n' \
+        'Original error was:'
+    raise
+
+
+class Ui(QtGui.QMainWindow, object):
     """singleton"""
     __instance = None
 
     def __init__(self, weld):
         if Ui.__instance is None:
-            Ui.__instance=self
+            Ui.__instance = self
         else:
             raise Exception('can declare new Ui instance. Ui is a singleton.')
         self.app = QtGui.QApplication(sys.argv)
@@ -48,6 +56,12 @@ class Ui(QtGui.QMainWindow,object):
         self.setup_console()
         self.setup_property_browser()
         self.setup_central_widget()
+
+    def BT_export_trigger(self):
+        self.weld.BT_export()
+
+    def export_level_trigger(self):
+        self.weld.export_level()
 
     def close_level_creation_dialog(self):
         idx = self.central_widget['widget'].indexOf(self.central_widget['level_creation_dialog'])
@@ -85,8 +99,8 @@ class Ui(QtGui.QMainWindow,object):
     def level_name(self, name):
         self._level_name = name
         if name is not None and 'qsteelwidget' in self.central_widget:
-            idx=self.central_widget['widget'].indexOf(self.central_widget['qsteelwidget'])
-            self.central_widget['widget'].setTabText(idx,name)
+            idx = self.central_widget['widget'].indexOf(self.central_widget['qsteelwidget'])
+            self.central_widget['widget'].setTabText(idx, name)
         self.update_window_title()
 
     def new_level_trigger(self):
@@ -232,7 +246,7 @@ class Ui(QtGui.QMainWindow,object):
         self.res_browser['level'] = tree
         self.res_browser['widget'].addTab(tree, 'level')
 
-    def set_resources_draggable(self,draggable):
+    def set_resources_draggable(self, draggable):
         self.res_browser['library'].setDragEnabled(draggable)
         self.res_browser['level'].setDragEnabled(draggable)
 
@@ -262,41 +276,6 @@ class Ui(QtGui.QMainWindow,object):
         ################
         #file menu
         self.menubar['file'] = self.menubar['widget'].addMenu('File')
-
-        #new project item
-        self.menubar['file_newProject'] = QtGui.QAction('new project', #title
-                                                        self, #parent
-                                                        shortcut='Ctrl+Shift+N',
-                                                        statusTip='',
-                                                        triggered=self.new_project_trigger)
-        self.menubar['file'].addAction(self.menubar['file_newProject'])
-
-        #open project item
-        self.menubar['file_openProject'] = QtGui.QAction('open project', #title
-                                                         self, #parent
-                                                         shortcut='Ctrl+Shift+O',
-                                                         statusTip='',
-                                                         triggered=self.open_project_trigger)
-        self.menubar['file'].addAction(self.menubar['file_openProject'])
-
-        #save project item
-        self.menubar['file_saveProject'] = QtGui.QAction('save project', #title
-                                                         self, #parent
-                                                         shortcut='Ctrl+Shift+S',
-                                                         statusTip='',
-                                                         triggered=self.save_project_trigger)
-        self.menubar['file'].addAction(self.menubar['file_saveProject'])
-
-        #close project item
-        self.menubar['file_closeProject'] = QtGui.QAction('close project', #title
-                                                          self, #parent
-                                                          shortcut='Ctrl+Shift+W',
-                                                          statusTip='',
-                                                          triggered=self.close_project_trigger)
-        self.menubar['file'].addAction(self.menubar['file_closeProject'])
-
-        self.menubar['file'].addSeparator()
-
         #quit
         self.menubar['file_quit'] = QtGui.QAction('quit', #title
                                                   self, #parent
@@ -325,7 +304,43 @@ class Ui(QtGui.QMainWindow,object):
                                                   triggered=self.redo_trigger)
         self.menubar['edit'].addAction(self.menubar['edit_redo'])
 
+        ################
+        #project menu
+        self.menubar['project'] = self.menubar['widget'].addMenu('Project')
 
+        #new project item
+        self.menubar['project_newProject'] = QtGui.QAction('new', #title
+                                                           self, #parent
+                                                           shortcut='Ctrl+Shift+N',
+                                                           statusTip='',
+                                                           triggered=self.new_project_trigger)
+        self.menubar['project'].addAction(self.menubar['project_newProject'])
+
+        #open project item
+        self.menubar['project_openProject'] = QtGui.QAction('open', #title
+                                                            self, #parent
+                                                            shortcut='Ctrl+Shift+O',
+                                                            statusTip='',
+                                                            triggered=self.open_project_trigger)
+        self.menubar['project'].addAction(self.menubar['project_openProject'])
+
+        #save project item
+        self.menubar['project_saveProject'] = QtGui.QAction('save', #title
+                                                            self, #parent
+                                                            shortcut='Ctrl+Shift+S',
+                                                            statusTip='',
+                                                            triggered=self.save_project_trigger)
+        self.menubar['project'].addAction(self.menubar['project_saveProject'])
+
+        #close project item
+        self.menubar['project_closeProject'] = QtGui.QAction('close', #title
+                                                             self, #parent
+                                                             shortcut='Ctrl+Shift+W',
+                                                             statusTip='',
+                                                             triggered=self.close_project_trigger)
+        self.menubar['project'].addAction(self.menubar['project_closeProject'])
+
+        self.menubar['project'].addSeparator()
 
         ################
         #level menu
@@ -361,6 +376,17 @@ class Ui(QtGui.QMainWindow,object):
                                                     statusTip='',
                                                     triggered=self.close_level_trigger)
         self.menubar['level'].addAction(self.menubar['level_close'])
+
+        ################
+        #behavor trees menu
+        self.menubar['BT'] = self.menubar['widget'].addMenu('Behavior Trees')
+        #quit
+        self.menubar['BT_export'] = QtGui.QAction('export to Steel', #title
+                                                  self, #parent
+                                                  shortcut='Ctrl+B',
+                                                  statusTip='',
+                                                  triggered=self.BT_export_trigger)
+        self.menubar['BT'].addAction(self.menubar['BT_export'])
 
 
 

@@ -1,0 +1,5 @@
+#in ms
+frequency=1000
+#set to 1 means that the filter returns success all the time except at the end off each period,
+#set to 0, it returns failure during the period
+open_filter=0

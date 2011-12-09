@@ -3,13 +3,14 @@ This file is nothing formal, just a reminder of what there is to do, and what ha
 == TODO ==
 - build BTModel and stuff around it to make things react. [steel, weld]
 - include bullet to handle physics. [steel]
-- rename Thing into Agent [weld,steel]
-- make the model manager singleton [steel]
+- make the model managers singletons [steel]
 
 == IN BETWEEN ==
 - move/rotate/scale objects [weld]
 
 == DONE ==
+2011-07-12
+- rename Thing into Agent [weld,steel]
 
 2011-07-06
 - remove from level directory all dependencies to a deleted file [weld]

@@ -26,7 +26,7 @@ class ResourceManager:
         #hide files that don't pass filters (instead of disabling them only)
         self.model.setNameFilterDisables(False)
         self.model.setRootPath(self.base_path)
-        #refcount of files. see incRefCount and decRefCount for details.
+        #refcount of files. see incRefCount and decRefCount methods for details.
         self.refcount = {}
         if self.level:
             #folder into which useless files are moved to.

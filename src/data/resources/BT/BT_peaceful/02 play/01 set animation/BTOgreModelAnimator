@@ -1,0 +1,3 @@
+#the kind of class that handles a model's animation
+class=BTOgreModelActor
+animation=fish_play_00

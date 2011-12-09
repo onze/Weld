@@ -1,6 +1,8 @@
 import os.path
 import sys
+
 import cPickle as pickle
+import os
 from debug import curr_f
 
 class Savable(object):
@@ -26,42 +28,50 @@ class Savable(object):
             file = open(self.savepath)
             unpickled = pickle.load(file)
             file.close()
-            for k, v in unpickled.items():
-                if k in unpickled:
-                    setattr(self, k, unpickled[k])
-                else:
-                    print>>sys.err,curr_f(),'could not load attribute \'%s\''%k
+            loaded = []
+            for k, v in unpickled.iteritems():
+                setattr(self, k, unpickled[k])
+            diff = set(self.savelist)-set(unpickled.keys())
+            if diff:
+                s = 'Some attributes that would have been saved were\'nt '\
+                'found in the loaded file:\n%s' % ', '.join(diff)
+                print >> sys.err, curr_f(), s
 
     def save(self):
         """
-        Saves the object under the given filename.
-        One can omit the filename if one has already called the load method.
-        The same filename is then used, and the file overwritten.
+        Saves the object into <self.savepath>.
         """
         toPickle = {}
         for varname in self.savelist:
-            if not hasattr(self, varname):
-                raise Exception('Trying to save a var that does not exist: \'%s\'' % varname)
-            toPickle[varname] = getattr(self, varname)
+            if hasattr(self, varname):
+                toPickle[varname] = getattr(self, varname)
+            else:
+                s = 'Trying to save a var that does not exist: \'%s\'' % varname
+                print >> sys.err, curr_f(), s
 
         filepath, filename = os.path.split(self.savepath)
         if not os.path.exists(filepath):
             os.makedirs(filepath)
         try:
-            #backup previous save
+            # backup previous save
             if os.path.exists(self.savepath):
-                os.rename(self.savepath,self.savepath+'.back')
+                os.rename(self.savepath, self.savepath + '.back')
 
-            #do actual saving
+            # create dir if necessary
+            dirpath, _ = os.path.split(self.savepath)
+            if not os.path.exists(dirpath):
+                os.makedirs(dirpath, 'rwx')
+                
+            # do actual saving
             file = open(self.savepath, 'wb')
             pickle.dump(toPickle, file)
             file.close()
 
-            #remove backup
-            if os.path.exists(self.savepath+'.back'):
-                os.remove(self.savepath+'.back')
+            # remove backup
+            if os.path.exists(self.savepath + '.back'):
+                os.remove(self.savepath + '.back')
         except Exception, e:
             raise
-            print >> sys.stderr, 'in Savable%s.save():'%self, e.args
+            print >> sys.stderr, 'in Savable%s.save():' % self, e.args
 
 

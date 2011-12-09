@@ -8,12 +8,28 @@ except IOError, e:
     print 'could not find config file \'weld_conf.py\'.'
 
     #setup default conf
+    #see weld_conf.py for options documentation.
     class conf:
         debug = False
 
         weld_data_path = 'data'
         weld_resource_group = 'weld_internals'
-        weld_trash_folder='trash'
+        weld_trash_folder = 'trash'
+
+        BT_nodes_classes_names = [
+            'BTSequence',
+            'BTSelector',
+        ]
+        BT_leaves_classes_names = [
+            'BTTimeFilter',
+            'BTSensor_Environment',
+            'BTNavigator',
+            'BTOgreModelAnimator',
+            'BTSensor_FishModel',
+            'BTFishModelActor',
+        ]
+        BT_warn_for_unexpected_infofiles = True
+        BT_add_debug_info_into_xml = True
 
         resource_ext_to_dirs = {
             'mesh':'meshes',
@@ -27,6 +43,9 @@ except IOError, e:
         drop_target_vec = (.0, -1., -10.)
 
         project_data_path = 'data'
+        
+        ################################levels
+        on_project_opening_reopen_last_level=True
 
 class Config:
     """
@@ -35,9 +54,9 @@ class Config:
     __instance = None
     def __init__(self):
         if Config.__instance is None:
-            Config.__instance=self
+            Config.__instance = self
         else:
-            raise Exception('can declare new Config instance. Config is a singleton.')
+            raise Exception('can\'t declare new Config instance. Config is a singleton.')
         #first do a basic copy of the config
         for k, v in conf.__dict__.items():
             self.__dict__[k] = v
@@ -50,7 +69,9 @@ class Config:
             #TODO: insert special cases here
             return self.__dict__[name]
         else:
-            raise Exception('there is no such config attribute as \'%s\'. Config dump:%s' % (name, dir(self)))
+            s = 'there is no such config attribute as \'%s\'. Config dump:%s' % (name, dir(self))
+            print s
+            raise Exception(s)
 
     @staticmethod
     def instance():

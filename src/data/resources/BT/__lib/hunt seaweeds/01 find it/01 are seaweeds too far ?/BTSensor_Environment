@@ -1,0 +1,9 @@
+target_category=seaweed
+min_distance=0
+#accepts inf for any distance
+max_distance=100
+#both optional
+save_target=1
+#static saves the position
+#dynamic saves the target, to allow following
+target_mode=static
