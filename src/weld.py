@@ -31,7 +31,7 @@ class Weld(Savable):
             Weld.__instance = self
         else:
             raise Exception('can\'t declare new Weld instance. Weld is a singleton.')
-        Savable.__init__(self, savepath=os.path.join(user.home,'.weld', 'weld.cache'))
+        Savable.__init__(self, savepath=os.path.join(user.home, '.weld', 'weld.cache'))
         self.savelist += ['current_project_path']
         # this is used to reload last opened project
         self.current_project_path = None
@@ -220,15 +220,26 @@ class Weld(Savable):
         Ui.instance().show_status('project %s opened' % (filename))
 
     def on_steel_closing(self, qsteelwidget):
-        p = os.path.join(self.current_project_path, Config.instance().weld_data_path, 'editor')
-        qsteelwidget.removeResourceLocation(p, Config.instance().weld_resource_group)
+        p = os.path.join(self.current_project_path, 
+                         Config.instance().weld_data_path,
+                         'editor')
+        qsteelwidget.removeResourceLocation(p,
+                                            Config.instance().weld_resource_group)
 
-    def on_steel_ready(self, qsteelwidget):
+    def on_steel_ready(self):
+        print "Weld.on_steel_ready()"
+        qsteelwidget=Ui.instance().qsteelwidget
         #make sure we know when to clean what follows
         qsteelwidget.onSteelClosing.connect(self.on_steel_closing)
         #add editing specific resources location
-        p = os.path.join(self.current_project_path, Config.instance().weld_data_path, 'resources')
-        qsteelwidget.addResourceLocation(p, 'FileSystem', Config.instance().weld_resource_group)
+        p = os.path.join(self.current_project_path, 
+                         Config.instance().weld_data_path,
+                         'resources')
+        qsteelwidget.addResourceLocation(p, 
+                                         'FileSystem',
+                                         Config.instance().weld_resource_group)
+        if self.project is not None:
+            self.project.on_steel_ready(qsteelwidget)
 
     def on_agents_selected(self, agentIds):
         print 'Weld.on_agents_selected() ids:', agentIds
@@ -237,17 +248,15 @@ class Weld(Savable):
         print 'Weld.on_quit()'
         self.save()
         self.save_project()
-        self.save_level()
         if self.project:
             self.project.close()
 
     def save_level(self):
-        if self.project and self.project.level:
-            print 'Weld.save_level()'
-            self.project.level.save()
-            Ui.instance().show_status('level saved.')
-        else:
-            Ui.instance().show_status('no level to save.')
+        """
+        might be called by the ui.
+        """
+        if self.project is not None:
+            self.project.save_level()
 
     def save_project(self):
         if self.project is None:

@@ -25,22 +25,20 @@ class Level(Savable):
         self.project = project
         self.name = name
         self.path = levelpath
-        #TODO:use a dict [id:{props}]
+        # list of AgentId's (int's)
         self.agents = []
         self.camera_position = QtGui.QVector3D()
         self.camera_rotation = QtGui.QVector4D()
         self.resMan = None
         self.qsteelwidget = None
 
-        Savable.__init__(self, savepath=os.path.join(self.path, self.name + '.weld.lvl'))
-        self.savelist += ['camera_position', 'camera_rotation', 'agents']
+        Savable.__init__(self, savepath=os.path.join(self.path, self.name + '.lvl.weld'))
+        self.savelist += ['camera_position', 'camera_rotation']
         self.resources = {'meshes':[]}
 
-    def __repr__(self):
-        return self.__str__()
 
-    def __str__(self):
-        return '<Level \'%s\'@%s>' % (self.name, self.path)
+    def __repr__(self):return self.__str__()
+    def __str__(self):return '<Level \'%s\'@%s>' % (self.name, self.path)
 
     def attach_to_Ui(self):
         """
@@ -54,10 +52,10 @@ class Level(Savable):
         self.qsteelwidget = Ui.instance().qsteelwidget
         if self.qsteelwidget.isSteelReady():
             print 'loading now.'
-            self.on_steel_ready()
+            weld.Weld.instance().on_steel_ready()
         else:
             print 'will wait for steel to be ready before loading.'
-            self.qsteelwidget.onSteelReady.connect(self.on_steel_ready)
+            self.qsteelwidget.onSteelReady.connect(weld.Weld.instance().on_steel_ready)
         Ui.instance().level_name = self.name
         
     def close(self):
@@ -85,48 +83,25 @@ class Level(Savable):
         else:
             print >> sys.__stderr__, 'Level.instanciate(): unknown resource type'
 
-    def on_steel_ready(self):
+    def on_steel_ready(self, qsteelwidget):
         """
         triggered by the qsteelwidget when steel is ready to process commands.
         """
+        self.qsteelwidget = qsteelwidget
         print "<Level %s>.on_steel_ready()" % (self.name)
         self.resMan.qsteelwidget = self.qsteelwidget
-        self.qsteelwidget.onAgentUpdated.connect(self.on_agent_updated)
-        self.qsteelwidget.onAgentsDeleted.connect(self.on_agents_deleted)
         self.qsteelwidget.setLevel(self.project.rootdir, self.name)
-        if len(self.agents):
-            for props in self.agents:
-                print "restoring:"
-                self.instanciate(props, already_in=True)
-        else:
-            print 'no agent to restore.'
+
         if self.camera_position != QtGui.QVector3D():
             self.qsteelwidget.cameraPosition(self.camera_position)
         if self.camera_rotation != QtGui.QVector4D():
             self.qsteelwidget.cameraRotation(self.camera_rotation)
-        weld.Weld.instance().on_steel_ready(self.qsteelwidget)
-
-    def on_agents_deleted(self, ids):
-        to_delete = [i for i, t in enumerate(self.agents) if t['id'] in ids]
-        while to_delete:
-            self.resMan.dec_refcount(self.agents[to_delete[0]])
-            del self.agents[to_delete[0]]
-            to_delete.pop(0)
-
-    def on_agent_updated(self, id, property, value):
-        for agent in self.agents:
-            if agent['id'] == id:
-                if property in agent:
-                    agent[property] = value
-                else:
-                    print >> sys.__stderr__, 'ERROR in on_agent_updated(self, id=%i, \
-property=%s, value=%s): unknown property. skipping' % (id, property, str(value))
-                break
 
     def save(self):
         """
         Retrieve some data before saving them.
         """
+        Ui.instance().show_status('level %s saved.' % self.name)
         self.qsteelwidget.saveCurrentLevel()
         self.camera_position = self.qsteelwidget.cameraPosition()
         self.camera_rotation = self.qsteelwidget.cameraRotation()

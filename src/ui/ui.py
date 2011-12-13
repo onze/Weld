@@ -58,20 +58,30 @@ class Ui(QtGui.QMainWindow, object):
         self.setup_central_widget()
 
     def BT_export_trigger(self):
+        print 'Ui.BT_export_trigger()'
         self.weld.BT_export()
 
     def export_level_trigger(self):
+        print 'Ui.export_level_trigger()'
         self.weld.export_level()
 
     def close_level_creation_dialog(self):
+        """
+        as in close the level-creation-dialog,
+        not close-level-creation dialog, if that makes sense.
+        """
+        print 'Ui.close_level_creation_dialog()'
         idx = self.central_widget['widget'].indexOf(self.central_widget['level_creation_dialog'])
         self.central_widget['widget'].removeTab(idx)
         del self.central_widget['level_creation_dialog']
 
     def close_level_trigger(self):
+        print 'Ui.close_level_trigger()'
+        print 'Ui.close_level()'
         self.weld.close_level()
 
     def close_project_trigger(self):
+        print 'Ui.close_project_trigger()'
         self.weld.close_project()
 
     @staticmethod
