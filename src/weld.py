@@ -176,7 +176,7 @@ class Weld(Savable):
             if props['resource_type'] == 'meshes':
                 props['meshName'] = props['name']
                 self.project.level.instanciate(props)
-                s = 'dropped agent \'%s\' with id %i' % (props['name'], props['id'])
+                s = 'dropped agent \'%s\' with id %i' % (props['name'], props['agentId'])
                 print s
                 Ui.instance().show_status(s)
             else:
@@ -228,7 +228,7 @@ class Weld(Savable):
 
     def on_steel_ready(self):
         print "Weld.on_steel_ready()"
-        qsteelwidget=Ui.instance().qsteelwidget
+        qsteelwidget = Ui.instance().qsteelwidget
         #make sure we know when to clean what follows
         qsteelwidget.onSteelClosing.connect(self.on_steel_closing)
         #add editing specific resources location

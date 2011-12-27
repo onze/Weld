@@ -1,6 +1,3 @@
-
-import os.path
-
 import sys
 import os
 
@@ -12,17 +9,14 @@ from config import Config
 from console import Console, Writer
 from levelcreationdialog import LevelCreationDialog
 
-
-
-
 try:
-    from PyQSteelWidget import QSteelWidget
+    from plugins import QSteelWidget
     #print 'dir(QSteelWidget):'
     #print '\t','\n\t'.join(sorted(dir(QSteelWidget)))
 except Exception, e:
     print>>sys.__stderr__, 'Caught an exception while loading the qsteelwidget.\n' \
-        'libPyQSteelWidget.so is expected to be located in the current directory,' \
-        'or its directory to be part of LD_LIBRARY_PATH.\n' \
+        'libPyQSteelWidget.so is expected to be located in <weld\'s root dir>/plugins,' \
+        ' or its directory to be part of LD_LIBRARY_PATH.\n' \
         'This shared library contains the Steel engine binding widget. You can '\
         'download it from https://github.com/onze/QSteelWidget \n' \
         'Original error was:'

@@ -1,5 +1,6 @@
 import sys
 
+import debug
 import os
 from config import Config
 from debug import curr_f
@@ -24,6 +25,8 @@ class Project(Savable):
         self.level = None
         self.level_name = None
 
+        # list of commands (as custom strings to execute at next call to on_steel_ready)
+        self.on_steel_ready_actions = []
         #
         self.savelist += ['rootdir', 'name', 'level_name']
 
@@ -44,15 +47,35 @@ class Project(Savable):
         """
         cleanly closes resources taken by the project.
         """
+        self.close_level()
+
+    def close_level(self):
         if self.level:
             self.level.close()
 
     def load(self):
         Savable.load(self)
         Ui.instance().project_name = self.name
-        if Config.instance().on_project_opening_reopen_last_level and \
-            self.level_name:
-            self.open_level(self.level_name)
+        print debug.curr_f(), ': Config.on_project_opening_reopen_last_level = True'
+        if Config.instance().on_project_opening_reopen_last_level:
+            print 'trying to reopen level named \'%s\'' % (self.level_name)
+            if self.level_name:
+                self.open_level(self.level_name)
+            else:
+                print >> sys.stderr, 'could not reopen such level.'
+        else:
+            print 'level auto reload skipped.'
+
+    def open_level(self, name):
+        print '%(self)s.open_level(\'%(name)s\')' % locals()
+        levelpath = os.path.join(self.rootdir, 'levels', name)
+        if not os.path.exists(levelpath):
+            s = 'Project.open_level(name=%s) canceled: invalid path %s' \
+                % (name, levelpath)
+            print >> sys.stderr, s
+            return
+        level = Level(self, name, levelpath)
+        self.make_level_current(level)
 
     def new_level(self, props):
         print '%(self)s.new_level()' % locals()
@@ -67,30 +90,35 @@ class Project(Savable):
 
     def make_level_current(self, level):
         """
-        Links the level with the editor (the widget part mainly).
+        Links the level with the editor (the widget part).
         """
         print '%(self)s.make_level_current()' % locals()
+        if self.level is not None:
+            if self.level is level:
+                print 'current level is current already.'
+                return
+            self.close_level()
         self.level_name = level.name
         self.level = level
+        self.on_steel_ready_actions.append('load_level')
         level.attach_to_Ui()
 
     def on_steel_ready(self, qsteelwidget):
         print "%(self)s.on_steel_ready()" % locals()
         Ui.instance().qsteelwidget.setRootDir(self.rootdir)
+        if 0:
+            while self.on_steel_ready_actions:
+                action = self.on_steel_ready_actions[0]
+                self.on_steel_ready_actions.pop(0)
+                if 'load_level' in action:
+                    assert(self.level is not None)
+                    self.level.load()
+                else:
+                    raise Exception('%(self)s: unrecognized action in '\
+                                    'self.on_steel_ready_actions: %(action)s' % \
+                                    locals())
         if self.level is not None:
             self.level.on_steel_ready(qsteelwidget)
-
-    def open_level(self, name):
-        print '%(self)s.open_level(\'%(name)s\')' % locals()
-        levelpath = os.path.join(self.rootdir, 'levels', name)
-        if not os.path.exists(levelpath):
-            s = 'Project.open_level(name=%s) canceled: invalid path %s' \
-                % (name, levelpath)
-            print >> sys.stderr, s
-            return
-        level = Level(self, name, levelpath)
-        level.load()
-        self.make_level_current(level)
 
     def save_level(self):
         if self.level is not None:

@@ -73,11 +73,16 @@ class Level(Savable):
         print '<Level \'%s\'>.instanciate():\n%s' % (self.name, pp(props))
         if props['resource_type'] == 'meshes':
             self.resMan.inc_refcount(props)
-            id = self.qsteelwidget.createAgent(props['meshName'] + '.' + props['ext'],
-                                               props['position'],
-                                               props['rotation'],
-                                               not already_in)
-            props['id'] = id
+            modelId = self.qsteelwidget.createOgreModel(props['meshName'] + '.' + props['ext'],
+                                                        props['position'],
+                                                        props['rotation'],
+                                                        not already_in)
+            print 'modelId: %(modelId)i' % locals()
+            agentId = self.qsteelwidget.createAgent()
+            print 'agentId: %(agentId)i' % locals()
+            r = self.qsteelwidget.linkAgentToOgreModel(agentId, modelId)
+            print 'could link: %s' % r
+            props['agentId'] = agentId
             if not already_in:
                 self.agents.append(dict(props))
         else:
@@ -97,14 +102,25 @@ class Level(Savable):
         if self.camera_rotation != QtGui.QVector4D():
             self.qsteelwidget.cameraRotation(self.camera_rotation)
 
+    def load(self):
+        """
+        Overloads Savable.load, just to add sync with steel-sided level.
+        """
+        if self.qsteelwidget is not None:
+            self.qsteelwidget.loadLevel()
+        Savable.load(self)
+
     def save(self):
         """
         Retrieve some data before saving them.
         """
-        Ui.instance().show_status('level %s saved.' % self.name)
-        self.qsteelwidget.saveCurrentLevel()
         self.camera_position = self.qsteelwidget.cameraPosition()
         self.camera_rotation = self.qsteelwidget.cameraRotation()
         Savable.save(self)
+        if self.qsteelwidget.saveCurrentLevel():
+            s='%(self)s saved successfuly'
+        else:
+            s='%(self)s failed to save'
+        Ui.instance().show_status(s)
 
 
