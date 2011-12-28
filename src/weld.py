@@ -219,12 +219,11 @@ class Weld(Savable):
         Ui.instance().set_resources_draggable(True)
         Ui.instance().show_status('project %s opened' % (filename))
 
-    def on_steel_closing(self, qsteelwidget):
+    def on_steel_closing(self, qsw):
         p = os.path.join(self.current_project_path, 
                          Config.instance().weld_data_path,
                          'editor')
-        qsteelwidget.removeResourceLocation(p,
-                                            Config.instance().weld_resource_group)
+        qsw.removeResourceLocation(p, Config.instance().weld_resource_group)
 
     def on_steel_ready(self):
         print "Weld.on_steel_ready()"
@@ -242,7 +241,7 @@ class Weld(Savable):
                                          Config.instance().weld_resource_group)
         if self.project is not None:
             self.project.on_steel_ready(qsteelwidget)
-        Ui.instance().on_steel_ready()
+        Ui.instance().on_steel_ready(qsteelwidget)
 
     def on_agents_selected(self, agentIds):
         print 'Weld.on_agents_selected() ids:', agentIds

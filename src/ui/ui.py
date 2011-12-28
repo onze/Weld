@@ -1,12 +1,12 @@
 import sys
-import os
+from console import Console
+from console import Writer
 
+import os
 from PySide import QtCore
 from PySide import QtGui
 from PySide.QtCore import Qt
-
 from config import Config
-from console import Console, Writer
 from levelcreationdialog import LevelCreationDialog
 from propertybrowser import PropertyBrowser
 
@@ -15,7 +15,7 @@ try:
     #print 'dir(QSteelWidget):'
     #print '\t','\n\t'.join(sorted(dir(QSteelWidget)))
 except Exception, e:
-    print>>sys.__stderr__, 'Caught an exception while loading the qsteelwidget.\n' \
+    print >> sys.__stderr__, 'Caught an exception while loading the qsteelwidget.\n' \
         'libPyQSteelWidget.so is expected to be located in <weld\'s root dir>/plugins,' \
         ' or its directory to be part of LD_LIBRARY_PATH.\n' \
         'This shared library contains the Steel engine binding widget. You can '\
@@ -114,8 +114,9 @@ class Ui(QtGui.QMainWindow, object):
     def new_project_trigger(self):
         self.weld.new_project()
 
-    def on_steel_ready(self):
-        self.props_browser['propsbrowser'].on_steel_ready()
+    def on_steel_ready(self, qsteelwidget):
+        self.props_browser['propsbrowser'].on_steel_ready(qsteelwidget)
+        #qsteelwidget.onNewLogLine.connect(Console.write)
 
     def open_level_creation_dialog(self, oktrigger):
         if self.oktrigger is not None:
@@ -149,10 +150,6 @@ class Ui(QtGui.QMainWindow, object):
         """
         if 'qsteelwidget' not in self.central_widget:
             self.central_widget['qsteelwidget'] = qsteelwidget = QSteelWidget()
-            writer = Writer(Console.instance,
-                            pre='<span style="color:green">',
-                            post='</span>',
-                            dispatch_list=[sys.__stdout__])
             if Config.instance().show_ogre_init:
                 qsteelwidget.onNewLogLine.connect(Console.write)
             self.central_widget['widget'].addTab(qsteelwidget, 'Steel view')
