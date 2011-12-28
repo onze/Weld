@@ -231,6 +231,8 @@ class Weld(Savable):
         qsteelwidget = Ui.instance().qsteelwidget
         #make sure we know when to clean what follows
         qsteelwidget.onSteelClosing.connect(self.on_steel_closing)
+        qsteelwidget.onItemDropped.connect(self.on_item_dropped)
+        qsteelwidget.onAgentsSelected.connect(self.on_agents_selected)
         #add editing specific resources location
         p = os.path.join(self.current_project_path, 
                          Config.instance().weld_data_path,
@@ -240,6 +242,7 @@ class Weld(Savable):
                                          Config.instance().weld_resource_group)
         if self.project is not None:
             self.project.on_steel_ready(qsteelwidget)
+        Ui.instance().on_steel_ready()
 
     def on_agents_selected(self, agentIds):
         print 'Weld.on_agents_selected() ids:', agentIds

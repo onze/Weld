@@ -8,6 +8,7 @@ from PySide.QtCore import Qt
 from config import Config
 from console import Console, Writer
 from levelcreationdialog import LevelCreationDialog
+from propertybrowser import PropertyBrowser
 
 try:
     from plugins import QSteelWidget
@@ -113,6 +114,9 @@ class Ui(QtGui.QMainWindow, object):
     def new_project_trigger(self):
         self.weld.new_project()
 
+    def on_steel_ready(self):
+        self.props_browser['propsbrowser'].on_steel_ready()
+
     def open_level_creation_dialog(self, oktrigger):
         if self.oktrigger is not None:
             raise Exception('oktrigger is not None: %s' % (str(self.oktrigger)))
@@ -151,8 +155,6 @@ class Ui(QtGui.QMainWindow, object):
                             dispatch_list=[sys.__stdout__])
             if Config.instance().show_ogre_init:
                 qsteelwidget.onNewLogLine.connect(Console.write)
-            qsteelwidget.onItemDropped.connect(self.weld.on_item_dropped)
-            qsteelwidget.onAgentsSelected.connect(self.weld.on_agents_selected)
             self.central_widget['widget'].addTab(qsteelwidget, 'Steel view')
         return self.central_widget['qsteelwidget']
 
@@ -219,12 +221,8 @@ class Ui(QtGui.QMainWindow, object):
         dockWidget.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.RightDockWidgetArea, dockWidget)
         #container widget
-        self.props_browser = {'widget':QtGui.QWidget()}
-
-        vlayout = QtGui.QVBoxLayout()
-        self.props_browser['widget'].setLayout(vlayout)
-        vlayout.addWidget(QtGui.QPushButton('test button'))
-        dockWidget.setWidget(self.props_browser['widget'])
+        self.props_browser = {'propsbrowser':PropertyBrowser()}
+        dockWidget.setWidget(self.props_browser['propsbrowser'])
 
     def setup_resources_browser(self):
         """
