@@ -9,6 +9,7 @@ from debug import curr_f
 class PropertyBrowser(QtGui.QTabWidget):
     def __init__(self):
         QtGui.QTabWidget.__init__(self)
+	self.setMinimumWidth(250)
         vlayout = QtGui.QVBoxLayout()
         self.setLayout(vlayout)
         self.tabs = []
