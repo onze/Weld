@@ -17,32 +17,31 @@ weld_resource_group = 'weld_internals'
 #name of the folder where useless files are moved to
 weld_trash_folder = 'trash'
 
+################################BTrees
 
-
-#those are classes Steel knows about.
+# Those are classes Steel knows about.
 BT_nodes_classes_names = [
-    #classic BT stuff
     'BTSequence',
     'BTSelector',
-]
-BT_leaves_classes_names = [
     'BTTimeFilter',
-    #Steel specifics
-    'BTSensor_Environment',
+    'BTLocalizer',
     'BTNavigator',
+    'BTSensor',
+    'BTTagEditor',
     'BTOgreModelAnimator',
-    #Unsteamable specifics
-    'BTSensor_FishModel',
-    'BTFishModelActor',
+    'BTDecorator_NOT',
 ]
+
 #If set to True, during BT export, weld will print a warning message for each
 #file in a BT subdirectory that does not satisfy info_file criteria:
 #   - its name does not start with 2 underscores
 #   - its name is not one listed in BT_nodes_classes_names or BT_leaves_classes_names.
 BT_warn_for_unexpected_infofiles = False
 
-#include extra info in BT xml nodes, like the file they've been produced from, etc
-BT_add_debug_info_into_xml = False
+# include extra info in BT serialized nodes, like the file they've been serialized
+# from, etc.
+# Attributes added because of this flag start with '__'.
+BT_serialization_add_debug_info = False
 
 ###############################resources browser
 #files dragged from weld resource browser can have a list of other files they

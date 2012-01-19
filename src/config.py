@@ -8,10 +8,11 @@ except IOError, e:
     print 'could not find config file \'weld_conf.py\'.'
 
     #setup default conf
-    #see weld_conf.py for options documentation.
+    #see weld_conf.py for documentation.
     class conf:
         debug = False
 
+        weld_version='0.1.0'
         weld_data_path = 'data'
         weld_resource_group = 'weld_internals'
         weld_trash_folder = 'trash'
@@ -19,14 +20,13 @@ except IOError, e:
         BT_nodes_classes_names = [
             'BTSequence',
             'BTSelector',
-        ]
-        BT_leaves_classes_names = [
             'BTTimeFilter',
-            'BTSensor_Environment',
+            'BTLocalizer',
             'BTNavigator',
+            'BTTimeFilter',
+            'BTSensor',
             'BTOgreModelAnimator',
-            'BTSensor_FishModel',
-            'BTFishModelActor',
+            'BTDecorator_NOT',
         ]
         BT_warn_for_unexpected_infofiles = True
         BT_add_debug_info_into_xml = True
@@ -45,7 +45,7 @@ except IOError, e:
         project_data_path = 'data'
         
         ################################levels
-        on_project_opening_reopen_last_level=True
+        on_project_opening_reopen_last_level = True
 
 class Config:
     """
@@ -69,7 +69,7 @@ class Config:
             #TODO: insert special cases here
             return self.__dict__[name]
         else:
-            s = 'there is no such config attribute as \'%s\'. Config dump:%s' % (name, dir(self))
+            s = 'there is no such config attribute as \'%s\'.' % (name)
             print s
             raise Exception(s)
 

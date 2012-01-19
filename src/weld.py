@@ -23,6 +23,10 @@ class Weld(Savable):
     """
     Main class of the editor.
     """
+
+    """application version"""
+    version = '0.1.0'
+    
     #singleton
     __instance = None
 
@@ -63,13 +67,15 @@ class Weld(Savable):
 
     def BT_export(self):
         """
-        Called by the Ui. Exports filesystem BT into Steel readable files.
+        Called by the Ui. Exports filesystem BTrees as json files.
         """
         src = os.path.join(self.resMan.base_path, Config.instance().weld_BT_root_folder)
+        srcs=self.BTMan.get_subdirs(src)
         dst = os.path.join(self.project.rootdir, Config.instance().weld_BT_root_folder)
         #this operation has lots of exceptions to output...
         try:
-            self.BTMan.export(src, dst)
+            for src in srcs:
+                self.BTMan.export(src, dst)
         except Exception, e:
             print >> sys.__stderr, 'ERROR in Weld.BT_export():'
             print >> sys.__stderr, e.args[0]
