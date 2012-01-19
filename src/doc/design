@@ -1,14 +1,16 @@
 
 == levels ==
-Level are loaded/save by steel itself, not weld, to get the 'save modifications you made on the level' feature is available at low cost.
+Level are loaded/save by steel itself, not weld, to get the 'save modifications you made on the level' feature available at low cost.
 Since one level is edited at a time, there's no need for a 'save all' option, so the single level design is okay.
 Weld just saves what level was last loaded, so that it can request an automatic reloading at startup.
-Level's info transits through the QSteelWidget, so that weld knows stuff about steel, without actually holding any info vital for steel.
+Level's info transits through the QSteelWidget, so that weld knows stuff about steel, without actually holding any info critical to steel.
 
 == Behavior Trees ==
-BT work in a different way, because even if it would be cool to be able to save modifications done to them, it would be too much work on the c++ side.
+The BT system works in a different way than , because even if it would be cool to be able to save modifications done to them, it would be too much work on the c++ side.
 The way it works is the following:
-	- one builds a BT with any available file browser
-	- one asks weld to export it (filesystem to json translation)
+	- one builds a BT with any available file browser,
+	- one asks weld to export it (triggers a filesystem to json translation)
 	- weld then requests steel to (re)load it
-At startup, steel has a list of BT's it can load. At level loading, agents ask steel to instanciate their BT.
+At startup, steel has a list of BT's it can use. At level loading, agents ask steel to instanciate their BT.
+
+BTrees are exported engine-wise, so that different levels can use same ones at no cost.

@@ -4,8 +4,10 @@ This file is nothing formal, just a reminder of what there is to do, and what ha
 - build BTModel and stuff around it to make things react. [steel, weld]
 - include bullet to handle physics. [steel]
 - make the model managers singletons [steel]
+- import BTree json files and deserialize them as BTrees
 
 == IN BETWEEN ==
+- export BTrees as json files [weld]
 - move/rotate/scale objects [weld]
 
 == DONE ==

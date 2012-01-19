@@ -1,0 +1,147 @@
+This is a documentation file describing behavior trees ('BTs' or 'BTrees') usage in weld/steel.
+
+
+=== Structure ===
+Trees are built using the tree-like file system structure. A folder represents a node, and a file inside it represents its type (file name) and properties (file content).
+
+the __lib folder contains common behavior nodes meant to be reused via symbolic links to them.
+
+
+A node's children are processed in sorted order of their folder names. It is a good practice to prepend a number to the names ('01 my first action', '99 my last action', etc), even though the alphabetical order itself can work.
+
+
+=== General description ===
+A tree is executed from its root node. This node, as any other one, can have children nodes and relay to them the execution.
+A node can yield 5 states: READY, RUNNING, SUCCESS, FAILURE and ERROR. The conditions under which it does so determines its behavior.
+
+=== nodes' behavior ===
+A node's behavior is described in the file its folder contains. This file contains standard "attribute name=value" lines. Comments start with '#' or '//'.
+
+The list below describes the different behaviors available, as well as their properties.
+
+
+== BTSequence ==
+A sequence iterate through its children until one of them fails.
+
+This lists its return states (left) and when they occur (description):
+    READY: at start
+    RUNNING: current child has returned a RUNNNING state
+    SUCCESS: last child has returned a SUCCESS state
+    FAILURE: current child has returned FAILURE
+    ERROR: current child has returned ERROR
+
+
+= BTSelector =
+A selector iterates through its children until one of them returns a SUCCESS state.
+
+This lists its return states (left) and when they occur (description):
+    READY: at start
+    RUNNING: the current child has returned a RUNNNING state
+    SUCCESS: the current child has returned a SUCCESS state
+    FAILURE: current child has returned FAILURE
+    ERROR: current child has returned ERROR
+
+
+= BTLocalizer =
+Find agents.
+Properties are:
+    - filter_in_tags: comma-separated list of strings (no quotes required). Search will discard agents not tagged thusly.
+    - filter_out_tags: comma-separated list of strings (no quotes required). Search will discard agents tagged thusly.
+    - min_distance: Optional. Search will discard agents which OgreModel is farther than this value. Default value is 0.
+    - max_distance: Optional. Search will discard agents which OgreModel is closer than this value. Accepts the string 'inf' for any distance (no quotes required). Default value is 'inf'.
+    - save_as: Optional. Keep the result on the agent's blackboard under the given name.
+    - save_mode: Optional. To use with the save_as attribute. Setting save_mode to 'static' (default) saves the result's position on the agent's blackboard. Setting it to dynamic save the agent's id.
+
+This lists its return states (left) and when they occur (description):
+    READY: not returned.
+    RUNNING: not returned.
+    SUCCESS: at least one result has been found.
+    FAILURE: no result has been found.
+    ERROR: not returned.
+
+
+= BTNavigator =
+Moves the agent's ogreModel through space. To be used in conjunction with BTLocalizer.
+Properties are:
+    - target: Name under which a target has been saved on ythe blackboard (BTLocalizer.save_as value).
+    - speed: Percentage of max speed
+
+This lists its return states (left) and when they occur (description):
+    READY: not returned.
+    RUNNING: Until target is reached.
+    SUCCESS: When target is reached.
+    FAILURE: If target disappears.
+    ERROR: not returned.
+
+= BTTimeFilter =
+Node that yields SUCCESS at regular intervals.
+Properies are:
+    - period: In milliseconds. Precision might not be excellent though.
+    
+This lists its return states (left) and when they occur (description):
+    READY: not returned.
+    RUNNING: Until end of period.
+    SUCCESS: At end of period.
+    FAILURE: not returned.
+    ERROR: not returned.
+
+
+= BTSensor =
+Node that yields SUCCESS under a condition specified as property.
+
+Properies are:
+    - target: Where to look for a value. Can be any tag on the blackboard, or one of the special values below:
+        - this: The tag value is looked for on the agent's blackboard
+        - (level ?)
+    - tag: the tag name looked for
+    - value: Optional (depending on the relation). What the tag value is compared to.
+    - relation: one of the following:
+        - >: the tag value is greater than value.
+        - <: the tag value is lesser than value.
+        - ==: the tag value is equal to value.
+        - exists: the tag exists on the blackboard (no value required).
+
+This lists its return states (left) and when they occur (description):
+    READY: not returned.
+    RUNNING: not returned.
+    SUCCESS: the relation is satisfied.
+    FAILURE: the relation is not satisfied.
+    ERROR: not returned.
+
+
+= BTOgreModelAnimator =
+Handles a model's animation. Properies here are still unclear since I don't know sh*t about ogre animation system, but this will fill up eventually.
+Properies are:
+    - animation: name of the ogre resource to start.
+
+This lists its return states (left) and when they occur (description):
+    READY: to be determined when the time comes.
+    RUNNING: to be determined when the time comes.
+    SUCCESS: to be determined when the time comes.
+    FAILURE: to be determined when the time comes.
+    ERROR: to be determined when the time comes.
+
+
+= BTDecorator_NOT =
+Runs its only child and yields the opposite result.
+
+This lists its return states (left) and when they occur (description):
+    READY: not returned.
+    RUNNING: the child yielded RUNNING.
+    SUCCESS: the child yielded FAILURE.
+    FAILURE: the child yielded SUCCESS.
+    ERROR: not returned.
+
+
+= BTTemplate =
+description
+Properies are:
+    - name: description.
+
+This lists its return states (left) and when they occur (description):
+    READY: not returned.
+    RUNNING: not returned.
+    SUCCESS: not returned.
+    FAILURE: not returned.
+    ERROR: not returned.
+
