@@ -1,5 +1,5 @@
 #return success if the agent is hungry
 #hunger goes from 0 to 100
-property=hunger
+tag=hunger
 relation=<
 value=25

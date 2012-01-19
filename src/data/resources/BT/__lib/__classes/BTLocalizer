@@ -1,1 +1,10 @@
- 
+target_category=
+min_distance=
+#accepts inf for any distance
+max_distance=
+#both optional
+save_target_as=
+#static saves the position
+#dynamic saves the target, to allow following
+target_mode=static|dynamic
+
